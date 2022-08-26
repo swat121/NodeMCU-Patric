@@ -127,7 +127,14 @@ void help(){
 //-----------------------------------------------------------------------------------------------------
 
 void getStatus(){
-  sendMessage("status", "relay1: " + String(Relay1) + "; " + "relay2: " + String(Relay2) + "; " + "relay3: " + String(Relay3) + "; " + "light: " + String(Light));
+  StaticJsonDocument<200> doc;
+  String s;
+  doc["name"] = "Patric";
+  doc["relay1"] = String(Relay1);
+  doc["relay2"] = String(Relay2);
+  doc["relay3"] = String(Relay3);
+  serializeJson(doc, s);
+  server.send(200, "application/json", s);
   ledBlink(1,100);
 }
 
@@ -174,13 +181,13 @@ void light(){
   Light = !Light;
   if(Light == true){
     for(int i = 0; i < 255; i++){
-    analogWrite(LED_Light, i);
+    analogWrite(PIN_Light, i);
     delay(10); 
     }
   }
   if(Light == false){
     for(int i = 254; i > -1; i--){
-    analogWrite(LED_Light, i);
+    analogWrite(PIN_Light, i);
     delay(10); 
     }
   }
@@ -244,7 +251,7 @@ float getTemperature() {
 void sendMessage(String key, String value) {
   StaticJsonDocument<200> doc;
   String s;
-  doc["name"] = "Garry";
+  doc["name"] = "Patric";
   doc[key] = value;
   serializeJson(doc, s);
   server.send(200, "application/json", s);
