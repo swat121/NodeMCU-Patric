@@ -12,13 +12,13 @@ boolean stat = true;
 #define PIN_LED_Error 14 //D5
 //------------------------------------------------------------------------
 #define PIN_Relay1 12 //D6
-boolean Relay1 = false;
+boolean Relay1 = true;
 
 #define PIN_Relay2 13 //D7
-boolean Relay2 = false;
+boolean Relay2 = true;
 
 #define PIN_Relay3 15 //D8
-boolean Relay3 = false;
+boolean Relay3 = true;
 
 #define PIN_Light 4 //D2
 boolean Light = false;
@@ -59,13 +59,13 @@ void setup() {
   pinMode(PIN_LED_Error, OUTPUT);
   
   pinMode(PIN_Relay1, OUTPUT);
-  digitalWrite(PIN_Relay1, LOW);
+  digitalWrite(PIN_Relay1, HIGH);
   
   pinMode(PIN_Relay2, OUTPUT);
-  digitalWrite(PIN_Relay2, LOW);
+  digitalWrite(PIN_Relay2, HIGH);
   
   pinMode(PIN_Relay3, OUTPUT);
-  digitalWrite(PIN_Relay3, LOW);
+  digitalWrite(PIN_Relay3, HIGH);
 
   pinMode(PIN_Light, OUTPUT);
   analogWrite(PIN_Light, 0);
@@ -133,6 +133,7 @@ void getStatus(){
   doc["relay1"] = String(Relay1);
   doc["relay2"] = String(Relay2);
   doc["relay3"] = String(Relay3);
+  doc["light"] = String(Light);
   serializeJson(doc, s);
   server.send(200, "application/json", s);
   ledBlink(1,100);
@@ -180,13 +181,13 @@ void getDataTemp(){
 void light(){
   Light = !Light;
   if(Light == true){
-    for(int i = 0; i < 255; i++){
+    for(int i = 0; i < 1024; i++){
     analogWrite(PIN_Light, i);
     delay(10); 
     }
   }
   if(Light == false){
-    for(int i = 254; i > -1; i--){
+    for(int i = 1023; i > -1; i--){
     analogWrite(PIN_Light, i);
     delay(10); 
     }
