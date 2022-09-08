@@ -181,16 +181,18 @@ void getDataTemp(){
 void light(){
   Light = !Light;
   if(Light == true){
-    for(int i = 0; i < 1024; i++){
+    for(int i = 0; i < 255; i++){
     analogWrite(PIN_Light, i);
     delay(10); 
     }
+    digitalWrite(PIN_Light, HIGH);
   }
   if(Light == false){
-    for(int i = 1023; i > -1; i--){
+    for(int i = 255; i > -1; i--){
     analogWrite(PIN_Light, i);
     delay(10); 
     }
+    digitalWrite(PIN_Light, LOW);
   }
   sendMessage("light", String(Light));
   ledBlink(1,100);
