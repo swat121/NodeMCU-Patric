@@ -1,5 +1,7 @@
 #include "ESP8266WiFi.h"
 #include "ESP8266WebServer.h"
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
 #include <ArduinoJson.h>
 
 #include <OneWire.h>
@@ -23,8 +25,8 @@ boolean Relay3 = true;
 #define PIN_Light 4 //D2
 boolean Light = false;
 
-#define PIN_Light_HIGH = 5 //D1
-#define PIN_Light_LOW = 0 //D3
+#define PIN_Light_HIGH 5 //D1
+#define PIN_Light_LOW 0 //D3
 //------------------------------------------------------------------------
 
 boolean backlightStat = false;
@@ -32,11 +34,12 @@ boolean connectStat = false;
 
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
-const char* ssid = "Parents";
+const char* ssid = "Xiaomi_Den4ik";
 const char* password = "Drim1932";
 //------------------------------------------------------------------------
 
-
+const char* serverName = "http://192.168.31.126:8080/bot/alarm";
+String sensorReadings;
 
 //------------------------------------------------------------------------
 #define ONE_WIRE_BUS 0
@@ -267,3 +270,41 @@ void sendMessage(String key, String value) {
 }
 
 //-----------------------------------------------------------------------------------------------------
+
+void getTelegramResponse(){
+  sensorReadings = httpGETRequest(serverName);
+  Serial.println(sensorReadings);
+  if (sensorReadings == "true"){
+    ledBlink(3, 200);
+  } else {
+    ledBlink(7, 200);
+  }
+}
+//-----------------------------------------------------------------------------------------------------
+
+String httpGETRequest(const char* serverName) {
+  WiFiClient client;
+  HTTPClient http;
+    
+  // Your IP address with path or Domain name with URL path 
+  http.begin(client, serverName);
+  
+  // Send HTTP POST request
+  int httpResponseCode = http.GET();
+  
+  String payload = { }; 
+  
+  if (httpResponseCode>0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+    payload = http.getString();
+  }
+  else {
+    Serial.print("Error code: ");
+    Serial.println(httpResponseCode);
+    ledDisconnect();
+  }
+  // Free resources
+  http.end();
+  return payload;
+}
