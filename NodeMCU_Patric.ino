@@ -22,6 +22,9 @@ boolean Relay3 = true;
 
 #define PIN_Light 4 //D2
 boolean Light = false;
+
+#define PIN_Light_HIGH = 5 //D1
+#define PIN_Light_LOW = 0 //D3
 //------------------------------------------------------------------------
 
 boolean backlightStat = false;
@@ -69,6 +72,11 @@ void setup() {
 
   pinMode(PIN_Light, OUTPUT);
   analogWrite(PIN_Light, 0);
+  pinMode(PIN_Light_HIGH, OUTPUT);
+  digitalWrite(PIN_Light_HIGH, HIGH);
+
+  pinMode(PIN_Light_LOW, OUTPUT);
+  digitalWrite(PIN_Light_LOW, LOW);
 
 //---------------------------------------------------------------------------------------------------
   WiFi.begin(ssid, password);
@@ -181,18 +189,16 @@ void getDataTemp(){
 void light(){
   Light = !Light;
   if(Light == true){
-    for(int i = 0; i < 255; i++){
+    for(int i = 0; i < 1024; i++){
     analogWrite(PIN_Light, i);
     delay(10); 
     }
-    digitalWrite(PIN_Light, HIGH);
   }
   if(Light == false){
-    for(int i = 255; i > -1; i--){
+    for(int i = 1023; i > -1; i--){
     analogWrite(PIN_Light, i);
     delay(10); 
     }
-    digitalWrite(PIN_Light, LOW);
   }
   sendMessage("light", String(Light));
   ledBlink(1,100);
