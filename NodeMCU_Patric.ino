@@ -34,11 +34,11 @@ boolean connectStat = false;
 
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
-const char* ssid = "Xiaomi_Den4ik";
+const char* ssid = "Parents";
 const char* password = "Drim1932";
 //------------------------------------------------------------------------
 
-const char* serverName = "http://192.168.31.126:8080/bot/alarm";
+const char* serverName = "http://192.168.0.102:8080/bot/alarm";
 String sensorReadings;
 
 //------------------------------------------------------------------------
@@ -192,13 +192,14 @@ void getDataTemp(){
 void light(){
   Light = !Light;
   if(Light == true){
-    for(int i = 0; i < 1024; i++){
+    for(int i = 0; i < 255; i++){
     analogWrite(PIN_Light, i);
     delay(10); 
     }
+    digitalWrite(PIN_Light, HIGH);
   }
   if(Light == false){
-    for(int i = 1023; i > -1; i--){
+    for(int i = 255; i > -1; i--){
     analogWrite(PIN_Light, i);
     delay(10); 
     }
