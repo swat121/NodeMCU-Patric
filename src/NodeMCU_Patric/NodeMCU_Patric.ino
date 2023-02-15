@@ -25,8 +25,6 @@ boolean Relay3 = true;
 #define PIN_Light 4 //D2
 boolean Light = false;
 
-#define PIN_Light_HIGH 5 //D1
-#define PIN_Light_LOW 0 //D3
 //------------------------------------------------------------------------
 
 boolean backlightStat = false;
@@ -42,7 +40,7 @@ const char* serverName = "http://192.168.0.102:8080/bot/alarm";
 String sensorReadings;
 
 //------------------------------------------------------------------------
-#define ONE_WIRE_BUS 0
+#define ONE_WIRE_BUS 0 //D3
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 float temperature;
@@ -75,11 +73,6 @@ void setup() {
 
   pinMode(PIN_Light, OUTPUT);
   analogWrite(PIN_Light, 0);
-  pinMode(PIN_Light_HIGH, OUTPUT);
-  digitalWrite(PIN_Light_HIGH, HIGH);
-
-  pinMode(PIN_Light_LOW, OUTPUT);
-  digitalWrite(PIN_Light_LOW, LOW);
 
 //---------------------------------------------------------------------------------------------------
   WiFi.begin(ssid, password);
