@@ -14,13 +14,13 @@ boolean stat = true;
 #define PIN_LED_Error 14 //D5
 //------------------------------------------------------------------------
 #define PIN_Relay1 12 //D6
-boolean Relay1 = true;
+boolean Relay1 = false;
 
 #define PIN_Relay2 13 //D7
-boolean Relay2 = true;
+boolean Relay2 = false;
 
 #define PIN_Relay3 15 //D8
-boolean Relay3 = true;
+boolean Relay3 = false;
 
 #define PIN_Light 4 //D2
 boolean Light = false;
@@ -63,13 +63,13 @@ void setup() {
   pinMode(PIN_LED_Error, OUTPUT);
   
   pinMode(PIN_Relay1, OUTPUT);
-  digitalWrite(PIN_Relay1, HIGH);
+  digitalWrite(PIN_Relay1, LOW);
   
   pinMode(PIN_Relay2, OUTPUT);
-  digitalWrite(PIN_Relay2, HIGH);
+  digitalWrite(PIN_Relay2, LOW);
   
   pinMode(PIN_Relay3, OUTPUT);
-  digitalWrite(PIN_Relay3, HIGH);
+  digitalWrite(PIN_Relay3, LOW);
 
   pinMode(PIN_Light, OUTPUT);
   analogWrite(PIN_Light, 0);
