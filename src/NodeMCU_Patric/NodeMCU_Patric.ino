@@ -155,7 +155,10 @@ void relay1(){
 void relay2(){
   Relay2 = !Relay2;
   digitalWrite(PIN_Relay2, Relay2);
-  sendMessage("relay2", String(Relay2));
+  delay(500);
+  Relay2 = !Relay2;
+  digitalWrite(PIN_Relay2, Relay2);
+  sendMessage("relay2", "OPEN");
   ledBlink(1,100);
 }
 
