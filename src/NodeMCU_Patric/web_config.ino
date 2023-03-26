@@ -1,36 +1,3 @@
-//===========================================================================
-void formElementEventCallback(ESPFormClass::HTMLElementItem element) {
-  Serial.println();
-  Serial.println("***********************************");
-  Serial.println("id: " + element.id);
-  Serial.println("value: " + element.value);
-  Serial.println("type: " + element.type);
-  Serial.println("event: " + ESPForm.getElementEventString(element.event));
-  Serial.println("***********************************");
-  Serial.println();
-  if (element.id.equals("text1")) {
-    ssid = element.value;
-  }
-  if (element.id.equals("text3")) {
-    pass = element.value;
-  }
-  if (element.id.equals("click")) {
-    writeToEEPROM(ssid, pass);
-    ESPForm.setElementContent("argee", "Yes");
-    Serial.println("RESTART....");
-    ESP.restart();
-  }
-}
-//===========================================================================
-void serverTimeoutCallback() {
-
-  //If server timeout (no client connected within specific time)
-  Serial.println("***********************************");
-  Serial.println("Server Timeout");
-  Serial.println("***********************************");
-  Serial.println();
-}
-//===========================================================================
 //Raw content of index.html in plain text
 static const char *index_html = R"--espform--(
 <!DOCTYPE html>
@@ -108,3 +75,36 @@ body {
 
 </html>
 )--espform--";
+//===========================================================================
+void formElementEventCallback(ESPFormClass::HTMLElementItem element) {
+  Serial.println();
+  Serial.println("***********************************");
+  Serial.println("id: " + element.id);
+  Serial.println("value: " + element.value);
+  Serial.println("type: " + element.type);
+  Serial.println("event: " + ESPForm.getElementEventString(element.event));
+  Serial.println("***********************************");
+  Serial.println();
+  if (element.id.equals("text1")) {
+    ssid = element.value;
+  }
+  if (element.id.equals("text3")) {
+    pass = element.value;
+  }
+  if (element.id.equals("click")) {
+    writeToEEPROM(ssid, pass);
+    ESPForm.setElementContent("argee", "Yes");
+    Serial.println("RESTART....");
+    ESP.restart();
+  }
+}
+//===========================================================================
+void serverTimeoutCallback() {
+
+  //If server timeout (no client connected within specific time)
+  Serial.println("***********************************");
+  Serial.println("Server Timeout");
+  Serial.println("***********************************");
+  Serial.println();
+}
+//===========================================================================

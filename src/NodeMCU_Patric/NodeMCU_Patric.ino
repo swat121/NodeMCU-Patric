@@ -1,7 +1,7 @@
-#include "ESP8266WiFi.h"
-#include "ESP8266WebServer.h"
+#include <ESP8266WiFi.h>
+//#include "ESP8266WebServer.h"
 #include <ESP8266HTTPClient.h>
-#include <WiFiClient.h>
+//#include <WiFiClient.h>
 #include <ArduinoJson.h>
 
 #include <OneWire.h>
@@ -52,7 +52,7 @@ boolean backlightStat = false;
 boolean connectStat = false;
 
 //------------------------------------------------------------------------
-ESP8266WebServer server(80);
+ESP8266WebServer server(82);
 // const char* ssid = "Parents";
 // const char* password = "Drim1932";
 //------------------------------------------------------------------------
@@ -68,8 +68,7 @@ float temperature;
 unsigned long timerTemp;
 //------------------------------------------------------------------------
 
-
-byte tries = 15;  // Попыткок подключения к точке доступа
+String WifiMode;
 
 void setup() {
 
@@ -102,23 +101,30 @@ void setup() {
     wifiModeSTA(ssid, pass);
     server.begin();  //Запускаем сервер
     Serial.println("Server listening");
+    WifiMode = "STA";
   } else {
     wifiModeAP();
+    WifiMode = "AP";
   }
   //-----------------------------------------------------------------------------------------------------
 }
 
 //-----------------------------------LOOP--------------------------------------------------------------
 void loop() {
-  server.handleClient();
-  checkConnect();
-  // If a client existed
-  if (ESPForm.getClientCount() > 0) {
-    if (millis() - prevMillis > 1000) {
-      prevMillis = millis();
-      //The event listener for text2 is not set because we don't want to listen to its value changes
-      ESPForm.setElementContent("ssid", ssid);
-      ESPForm.setElementContent("pass", pass);
+  if (WifiMode == "STA") {
+    server.handleClient();
+    checkConnect();
+  }
+
+  if (WifiMode == "AP") {
+    // If a client existed
+    if (ESPForm.getClientCount() > 0) {
+      if (millis() - prevMillis > 1000) {
+        prevMillis = millis();
+        //The event listener for text2 is not set because we don't want to listen to its value changes
+        ESPForm.setElementContent("ssid", ssid);
+        ESPForm.setElementContent("pass", pass);
+      }
     }
   }
 }
