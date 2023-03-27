@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
-//#include "ESP8266WebServer.h"
+#include "ESP8266WebServer.h"
 #include <ESP8266HTTPClient.h>
-//#include <WiFiClient.h>
+#include <WiFiClient.h>
 #include <ArduinoJson.h>
 
 #include <OneWire.h>
@@ -9,7 +9,7 @@
 
 #include <EEPROM.h>
 
-#include <ESPForm.h>
+//#include <ESPForm.h>
 
 //------------------------------------------------------------------------
 #define AP_SSID "Patric"
@@ -52,7 +52,7 @@ boolean backlightStat = false;
 boolean connectStat = false;
 
 //------------------------------------------------------------------------
-ESP8266WebServer server(82);
+ESP8266WebServer server(80);
 // const char* ssid = "Parents";
 // const char* password = "Drim1932";
 //------------------------------------------------------------------------
@@ -74,7 +74,6 @@ void setup() {
 
   Serial.begin(115200);
   delay(100);
-
   //------------------------------------------------------------------------
   sensors.begin();
   //------------------------------------------------------------------------
@@ -99,11 +98,13 @@ void setup() {
   //---------------------------------------------------------------------------------------------------
   if (status) {
     wifiModeSTA(ssid, pass);
-    server.begin();  //Запускаем сервер
+    //server.begin();  //Запускаем сервер
+    //ESPForm.server().begin();
     Serial.println("Server listening");
     WifiMode = "STA";
   } else {
     wifiModeAP();
+    server.begin();
     WifiMode = "AP";
   }
   //-----------------------------------------------------------------------------------------------------
@@ -112,20 +113,21 @@ void setup() {
 //-----------------------------------LOOP--------------------------------------------------------------
 void loop() {
   if (WifiMode == "STA") {
-    server.handleClient();
+    //ESPForm.handleWebClient();
     checkConnect();
   }
 
   if (WifiMode == "AP") {
     // If a client existed
-    if (ESPForm.getClientCount() > 0) {
-      if (millis() - prevMillis > 1000) {
-        prevMillis = millis();
-        //The event listener for text2 is not set because we don't want to listen to its value changes
-        ESPForm.setElementContent("ssid", ssid);
-        ESPForm.setElementContent("pass", pass);
-      }
-    }
+    // if (ESPForm.getClientCount() > 0) {
+    //   if (millis() - prevMillis > 1000) {
+    //     prevMillis = millis();
+    //     //The event listener for text2 is not set because we don't want to listen to its value changes
+    //     ESPForm.setElementContent("ssid", ssid);
+    //     ESPForm.setElementContent("pass", pass);
+    //   }
+    // }
+    server.handleClient();
   }
 }
 

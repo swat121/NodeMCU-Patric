@@ -16,7 +16,7 @@ void getStatus() {
   doc["relay3"] = String(Relay3);
   doc["light"] = String(Light);
   serializeJson(doc, s);
-  server.send(200, "application/json", s);
+  //ESPForm.server_p().send(200, "application/json", s);
   ledBlink(1, 100);
 }
 
@@ -95,7 +95,7 @@ void sendMessage(String key, String value) {
   doc["name"] = "Patric";
   doc[key] = value;
   serializeJson(doc, s);
-  server.send(200, "application/json", s);
+  //ESPForm.server_p().send(200, "application/json", s);
 }
 //-----------------------------------------------------------------------------------------------------
 

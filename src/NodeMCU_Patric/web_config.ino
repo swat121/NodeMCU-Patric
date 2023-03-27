@@ -58,53 +58,47 @@ body {
 </head>
 
 <body>
-	<form>
-		<label for="text1">SSID to device</label>
-		<input type="text" id="text1" name="text1" value="Change me..."/>
-    <label for="text3">PASS to device</label>
-		<input type="text" id="text3" name="text3" value="Change me..."/>
-		<label for="text2">Your WiFi ssid</label>
-		<input type="text" id="ssid" name="text2" /> 
-    <label for="text4">Your WiFi password</label>
-		<input type="text" id="pass" name="text4" />
-    <input type="button" id="click" name="buttonSubmit" value="Save"/>
-    <label for="text5">Argee?</label>
-		<input type="text" id="argee" name="argee" readonly/>
+	<form method="POST" action="/submit">
+		<label for="ssid">SSID to device</label>
+		<input type="text" id="ssid" name="ssid"/>
+    <label for="pass">PASS to device</label>
+		<input type="text" id="pass" name="pass"/>
+    <input type="submit" value="Save"/>
   </form>
 </body>
 
 </html>
 )--espform--";
 //===========================================================================
-void formElementEventCallback(ESPFormClass::HTMLElementItem element) {
-  Serial.println();
-  Serial.println("***********************************");
-  Serial.println("id: " + element.id);
-  Serial.println("value: " + element.value);
-  Serial.println("type: " + element.type);
-  Serial.println("event: " + ESPForm.getElementEventString(element.event));
-  Serial.println("***********************************");
-  Serial.println();
-  if (element.id.equals("text1")) {
-    ssid = element.value;
-  }
-  if (element.id.equals("text3")) {
-    pass = element.value;
-  }
-  if (element.id.equals("click")) {
-    writeToEEPROM(ssid, pass);
-    ESPForm.setElementContent("argee", "Yes");
-    Serial.println("RESTART....");
-    ESP.restart();
-  }
-}
-//===========================================================================
-void serverTimeoutCallback() {
+// void formElementEventCallback(ESPFormClass::HTMLElementItem element) {
+//   Serial.println();
+//   Serial.println("***********************************");
+//   Serial.println("id: " + element.id);
+//   Serial.println("value: " + element.value);
+//   Serial.println("type: " + element.type);
+//   Serial.println("event: " + ESPForm.getElementEventString(element.event));
+//   Serial.println("***********************************");
+//   Serial.println();
+//   if (element.id.equals("text1")) {
+//     ssid = element.value;
+//   }
+//   if (element.id.equals("text3")) {
+//     pass = element.value;
+//   }
+//   if (element.id.equals("click")) {
+//     writeToEEPROM(ssid, pass);
+//     ESPForm.setElementContent("argee", "Yes");
+//     Serial.println("RESTART....");
+//     ESP.restart();
+//   }
+// }
+// //===========================================================================
+// void serverTimeoutCallback() {
 
-  //If server timeout (no client connected within specific time)
-  Serial.println("***********************************");
-  Serial.println("Server Timeout");
-  Serial.println("***********************************");
-  Serial.println();
-}
+//   //If server timeout (no client connected within specific time)
+//   Serial.println("***********************************");
+//   Serial.println("Server Timeout");
+//   Serial.println("***********************************");
+//   Serial.println();
+// }
 //===========================================================================
