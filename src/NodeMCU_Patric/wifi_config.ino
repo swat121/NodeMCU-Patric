@@ -1,5 +1,6 @@
 //==========================================================================================================================
 void wifiModeSTA(String WIFI_SSID, String WIFI_PASSWORD) {
+  Serial.println();
   Serial.println("======================Wifi-Mode-STA===========================");
   byte tries = 15;
   //For STA only or AP + STA mode
@@ -15,7 +16,7 @@ void wifiModeSTA(String WIFI_SSID, String WIFI_PASSWORD) {
     Serial.println("Non Connecting to WiFi..");
     Serial.println("Write status to EEPROM");
 
-    EEPROM.begin(2048);
+    EEPROM.begin(1024);
     delay(500);
 
     EEPROM.write(0, 0);
@@ -35,17 +36,11 @@ void wifiModeSTA(String WIFI_SSID, String WIFI_PASSWORD) {
   Serial.println("=================================================");
   Serial.println();
 
-  // ESPForm.server_p().on("/help", help);
-  // ESPForm.server_p().on("/relay1", relay1);
-  // ESPForm.server_p().on("/relay2", relay2);
-  // ESPForm.server_p().on("/relay3", relay3);
-  // ESPForm.server_p().on("/backlight", getBacklight);
-  // ESPForm.server_p().on("/temperature", getDataTemp);
-  // ESPForm.server_p().on("/light", light);
-  // ESPForm.server_p().on("/message", message);
+  setCommands();
 }
 //=======================================================================================================================
 void wifiModeAP() {
+  Serial.println();
   Serial.println("======================Wifi-Mode-AP===========================");
 
   Serial.print("Setting soft-AP configuration ... ");
@@ -62,39 +57,5 @@ void wifiModeAP() {
   //  "IP-адрес программной точки доступа = "
   Serial.println(WiFi.softAPIP());
 
-  //Add the html contents (in html.h) for the web page rendering
-  // ESPForm.addFileData(index_html, "index.html");
-
-  // //Add html element event listener, id "text1" for onchange event
-  // ESPForm.addElementEventListener("text1", ESPFormClass::EVENT_ON_CHANGE);
-  // ESPForm.addElementEventListener("text3", ESPFormClass::EVENT_ON_CHANGE);
-  // ESPForm.addElementEventListener("click", ESPFormClass::EVENT_ON_CLICK);
-  // //Start ESPForm's Webserver
-  // ESPForm.begin(formElementEventCallback, serverTimeoutCallback, serverTimeout, true);
-
-  // ESPForm.startServer();
-  server.on("/page", HTTP_GET, handleHtmlPage);
-  server.on("/submit", HTTP_POST, handleFormSubmit2);
-}
-
-void handleFormSubmit2() {
-  if (server.hasArg("ssid") && server.hasArg("pass")) {
-    String arg1 = server.arg("ssid");
-    String arg2 = server.arg("pass");
-    // Do something with the message, e.g. print it to Serial
-    Serial.println(arg1);
-    Serial.println(arg2);
-
-    server.send(200, "text/plain", "OK");
-    writeToEEPROM(arg1, arg2);
-    delay(3000);
-    Serial.println("Reset..");
-    ESP.restart();
-  } else {
-    server.send(400, "text/plain", "Bad Request");
-  }
-}
-
-void handleHtmlPage() {
-  server.send(200, "text/html", index_html);
+  setCommands();
 }

@@ -1,4 +1,25 @@
 //-----------------------------------------------------------------------------------------------------
+void setCommands() {
+  Serial.println();
+  Serial.println("==================SET-COMMAND===============");
+  Serial.println(WifiMode);
+  if (WifiMode == "STA") {
+    server.on("/help", help);
+    server.on("/relay1", relay1);
+    server.on("/relay2", relay2);
+    server.on("/relay3", relay3);
+    server.on("/backlight", getBacklight);
+    server.on("/temperature", getDataTemp);
+    server.on("/light", light);
+    server.on("/message", message);
+  }
+  if (WifiMode == "AP") {
+    server.on("/", HTTP_GET, handleMainHtmlPage);
+    server.on("/submit", HTTP_POST, handleFormSubmit);
+  }
+}
+
+//-----------------------------------------------------------------------------------------------------
 
 void help() {
   sendMessage("help", "/status; /relay1; /relay2; /relay3; /backlight; /temperature; /light; /message;");
@@ -16,7 +37,7 @@ void getStatus() {
   doc["relay3"] = String(Relay3);
   doc["light"] = String(Light);
   serializeJson(doc, s);
-  //ESPForm.server_p().send(200, "application/json", s);
+  server.send(200, "application/json", s);
   ledBlink(1, 100);
 }
 
@@ -95,7 +116,7 @@ void sendMessage(String key, String value) {
   doc["name"] = "Patric";
   doc[key] = value;
   serializeJson(doc, s);
-  //ESPForm.server_p().send(200, "application/json", s);
+  server.send(200, "application/json", s);
 }
 //-----------------------------------------------------------------------------------------------------
 
@@ -104,3 +125,4 @@ float getTemperature() {
   temperature = sensors.getTempCByIndex(0);
   return temperature;
 }
+

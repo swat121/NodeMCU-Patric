@@ -29,7 +29,7 @@ body {
 		font-size: 17px;
 	}
 
-  #click {
+  #submit {
     cursor:pointer;
     display: block;
 		width: 100px;
@@ -39,18 +39,6 @@ body {
 		border: 1px solid #03A9F4;
 		background: #39ad50;
 		color: #ffffff;
-		font-size: 17px;
-  }
-  
-  #agree {
-    display: block;
-		width: 70px;
-		height: 40px;
-		padding: 4px 10px;
-		margin: 10 0 10 0;
-		border: 1px solid #03A9F4;
-		background: #cce6ff;
-		color: #e80000;
 		font-size: 17px;
   }
 }
@@ -63,42 +51,35 @@ body {
 		<input type="text" id="ssid" name="ssid"/>
     <label for="pass">PASS to device</label>
 		<input type="text" id="pass" name="pass"/>
-    <input type="submit" value="Save"/>
+    <input type="submit" id="submit" value="Save"/>
   </form>
 </body>
 
 </html>
 )--espform--";
-//===========================================================================
-// void formElementEventCallback(ESPFormClass::HTMLElementItem element) {
-//   Serial.println();
-//   Serial.println("***********************************");
-//   Serial.println("id: " + element.id);
-//   Serial.println("value: " + element.value);
-//   Serial.println("type: " + element.type);
-//   Serial.println("event: " + ESPForm.getElementEventString(element.event));
-//   Serial.println("***********************************");
-//   Serial.println();
-//   if (element.id.equals("text1")) {
-//     ssid = element.value;
-//   }
-//   if (element.id.equals("text3")) {
-//     pass = element.value;
-//   }
-//   if (element.id.equals("click")) {
-//     writeToEEPROM(ssid, pass);
-//     ESPForm.setElementContent("argee", "Yes");
-//     Serial.println("RESTART....");
-//     ESP.restart();
-//   }
-// }
-// //===========================================================================
-// void serverTimeoutCallback() {
 
-//   //If server timeout (no client connected within specific time)
-//   Serial.println("***********************************");
-//   Serial.println("Server Timeout");
-//   Serial.println("***********************************");
-//   Serial.println();
-// }
-//===========================================================================
+
+//-----------------------------------------------------------------------------------------------------
+
+void handleFormSubmit() {
+  if (server.hasArg("ssid") && server.hasArg("pass")) {
+    String arg1 = server.arg("ssid");
+    String arg2 = server.arg("pass");
+    // Do something with the message, e.g. print it to Serial
+    Serial.println(arg1);
+    Serial.println(arg2);
+
+    server.send(200, "text/plain", "OK");
+    writeToEEPROM(arg1, arg2);
+    delay(3000);
+    Serial.println("Reset..");
+    ESP.restart();
+  } else {
+    server.send(400, "text/plain", "Bad Request");
+  }
+}
+//-----------------------------------------------------------------------------------------------------
+
+void handleMainHtmlPage() {
+  server.send(200, "text/html", index_html);
+}

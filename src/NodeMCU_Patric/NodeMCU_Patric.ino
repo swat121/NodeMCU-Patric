@@ -1,7 +1,5 @@
-#include <ESP8266WiFi.h>
 #include "ESP8266WebServer.h"
 #include <ESP8266HTTPClient.h>
-#include <WiFiClient.h>
 #include <ArduinoJson.h>
 
 #include <OneWire.h>
@@ -9,12 +7,9 @@
 
 #include <EEPROM.h>
 
-//#include <ESPForm.h>
-
 //------------------------------------------------------------------------
 #define AP_SSID "Patric"
 #define AP_PASS "12345678"
-#define STR_ADDR 32
 
 //------------------------------------------------------------------------
 IPAddress local_IP(192, 168, 4, 22);
@@ -28,6 +23,7 @@ unsigned long serverTimeout = 2 * 60 * 1000;
 boolean status = true;
 String ssid;
 String pass;
+String WifiMode;
 //------------------------------------------------------------------------
 unsigned long timer;
 boolean stat = true;
@@ -53,8 +49,6 @@ boolean connectStat = false;
 
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
-// const char* ssid = "Parents";
-// const char* password = "Drim1932";
 //------------------------------------------------------------------------
 
 const char* serverName = "http://192.168.0.102:8080/bot/alarm";
@@ -67,8 +61,6 @@ DallasTemperature sensors(&oneWire);
 float temperature;
 unsigned long timerTemp;
 //------------------------------------------------------------------------
-
-String WifiMode;
 
 void setup() {
 
@@ -97,15 +89,14 @@ void setup() {
   readFromEEPROM();
   //---------------------------------------------------------------------------------------------------
   if (status) {
-    wifiModeSTA(ssid, pass);
-    //server.begin();  //Запускаем сервер
-    //ESPForm.server().begin();
-    Serial.println("Server listening");
     WifiMode = "STA";
+    wifiModeSTA(ssid, pass);
+    server.begin();  //Запускаем сервер
+    Serial.println("Server listening");
   } else {
+    WifiMode = "AP";
     wifiModeAP();
     server.begin();
-    WifiMode = "AP";
   }
   //-----------------------------------------------------------------------------------------------------
 }
@@ -113,22 +104,9 @@ void setup() {
 //-----------------------------------LOOP--------------------------------------------------------------
 void loop() {
   if (WifiMode == "STA") {
-    //ESPForm.handleWebClient();
     checkConnect();
   }
-
-  if (WifiMode == "AP") {
-    // If a client existed
-    // if (ESPForm.getClientCount() > 0) {
-    //   if (millis() - prevMillis > 1000) {
-    //     prevMillis = millis();
-    //     //The event listener for text2 is not set because we don't want to listen to its value changes
-    //     ESPForm.setElementContent("ssid", ssid);
-    //     ESPForm.setElementContent("pass", pass);
-    //   }
-    // }
-    server.handleClient();
-  }
+  server.handleClient();
 }
 
 //-----------------------------------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 //================================================================
 void writeToEEPROM(String ssid, String pass) {
+  Serial.println();
   Serial.println("======================Start-Write-To-EEPROM===========================");
   int ssidLenght = ssid.length();
   int passLenght = pass.length();
@@ -7,7 +8,7 @@ void writeToEEPROM(String ssid, String pass) {
   int i = 0;
   int j;
 
-  EEPROM.begin(2048);
+  EEPROM.begin(1024);
   delay(500);
 
   Serial.println("writing eeprom ssid:");
@@ -43,6 +44,7 @@ void writeToEEPROM(String ssid, String pass) {
 }
 //================================================================
 void readFromEEPROM() {
+  Serial.println();
   Serial.println("======================Start-Read-From-EEPROM===========================");
   char readSSID;
   char readPASS;
@@ -50,7 +52,7 @@ void readFromEEPROM() {
   pass = "";
   int i = 1;
 
-  EEPROM.begin(2048);
+  EEPROM.begin(1024);
   delay(200);
 
   status = boolean(EEPROM.read(0));
