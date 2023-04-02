@@ -1,6 +1,9 @@
 //-----------------------------------------------------------------------------------------------------
 
 void getTelegramResponse() {
+  const char* serverName = "http://192.168.0.102:8080/bot/alarm";
+  String sensorReadings;
+  
   sensorReadings = httpGETRequest(serverName);
   Serial.println(sensorReadings);
   if (sensorReadings == "true") {

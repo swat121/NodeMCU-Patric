@@ -17,9 +17,6 @@ IPAddress gateway(192, 168, 4, 9);
 IPAddress subnet(255, 255, 255, 0);
 
 //------------------------------------------------------------------------
-unsigned long prevMillis = 0;
-unsigned long serverTimeout = 2 * 60 * 1000;
-//------------------------------------------------------------------------
 boolean status = true;
 String ssid;
 String pass;
@@ -50,9 +47,6 @@ boolean connectStat = false;
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
 //------------------------------------------------------------------------
-
-const char* serverName = "http://192.168.0.102:8080/bot/alarm";
-String sensorReadings;
 
 //------------------------------------------------------------------------
 #define ONE_WIRE_BUS 0  //D3
