@@ -36,6 +36,8 @@ void wifiModeSTA(String WIFI_SSID, String WIFI_PASSWORD) {
   Serial.println("=================================================");
   Serial.println();
 
+  splitString(WiFi.localIP().toString());
+  checkConnectToServer();
   setCommands();
 }
 //=======================================================================================================================
