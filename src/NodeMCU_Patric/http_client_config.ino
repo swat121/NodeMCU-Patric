@@ -1,24 +1,33 @@
-void checkConnectToServer() {
+void checkConnectToServer(int timeout) {
   String whiteIp = parts[0] + "." + parts[1] + "." + parts[2] + ".";
   String payload;
-  int timeout = 700;
-  int port = 8080;
-  String uri = "/ping";
-  String uri2 = "/clients";
+  String ip;
   char host[100];
-  char karenPOST[100];
+  char karen[100];
   for (int i = 1; i < 255; i++) {
-    sprintf(host, "http://%s%d:%d%s", whiteIp.c_str(), i, port, uri.c_str());
+    sprintf(host, "http://%s%d:%d%s", whiteIp.c_str(), i, 8080, "/ping");
     Serial.println(host);
     if (ping(host, timeout) == "pong") {
+
       Serial.print("Karen host is: ");
-      Serial.println(whiteIp + i);
-      sprintf(karenPOST, "http://%s%d:%d%s", whiteIp.c_str(), i, port, uri2.c_str());
-      Serial.println(karenPOST);
-      payload = "name=Patric&ip=" + WiFi.localIP().toString();
-      String r = POSTRequest(karenPOST, "application/x-www-form-urlencoded", payload);
+      ip = whiteIp + i;
+      Serial.println(ip);
+
+      sprintf(karen, "http://%s%d:%d%s", whiteIp.c_str(), i, 8080, "/clients");
+      Serial.println(karen);
+
+      StaticJsonDocument<200> doc;
+      data.ip = WiFi.localIP().toString();
+      doc["name"] = data.name;
+      doc["ip"] = data.ip;
+      doc["mac"] = data.mac;
+      doc["ssid"] = data.ssid;
+      serializeJson(doc, payload);
+      String response = POSTRequest(karen, "application/json", payload);
+
+
       Serial.println("POST request to Karen");
-      Serial.println(r);
+      Serial.println(response);
       break;
     }
   }

@@ -37,7 +37,11 @@ void wifiModeSTA(String WIFI_SSID, String WIFI_PASSWORD) {
   Serial.println();
 
   splitString(WiFi.localIP().toString());
-  checkConnectToServer();
+  
+  data.mac = WiFi.macAddress();
+  data.ssid = ssid;
+
+  checkConnectToServer(700);
   setCommands();
 }
 //=======================================================================================================================

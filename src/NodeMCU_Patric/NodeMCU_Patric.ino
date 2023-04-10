@@ -8,6 +8,16 @@
 #include <EEPROM.h>
 
 //------------------------------------------------------------------------
+struct Data {
+  String name = "patric";
+  String ip;
+  String mac;
+  String ssid;
+};
+
+Data data;
+
+//------------------------------------------------------------------------
 #define AP_SSID "Patric"
 #define AP_PASS "12345678"
 

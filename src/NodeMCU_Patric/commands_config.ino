@@ -12,6 +12,7 @@ void setCommands() {
     server.on("/temperature", getDataTemp);
     server.on("/light", light);
     server.on("/message", message);
+    server.on("/status", getStatus);
   }
   if (WifiMode == "AP") {
     server.on("/", HTTP_GET, handleMainHtmlPage);
