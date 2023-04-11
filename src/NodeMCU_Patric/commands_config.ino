@@ -32,7 +32,7 @@ void help() {
 void getStatus() {
   StaticJsonDocument<200> doc;
   String s;
-  doc["name"] = "Patric";
+  doc["name"] = data.name;
   doc["relay1"] = String(Relay1);
   doc["relay2"] = String(Relay2);
   doc["relay3"] = String(Relay3);

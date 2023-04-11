@@ -4,7 +4,8 @@ void checkConnectToServer(int timeout) {
   String ip;
   char host[100];
   char karen[100];
-  for (int i = 1; i < 255; i++) {
+  int i;
+  for (i = 1; i < 255; i++) {
     sprintf(host, "http://%s%d:%d%s", whiteIp.c_str(), i, 8080, "/ping");
     Serial.println(host);
     if (ping(host, timeout) == "pong") {
@@ -28,8 +29,13 @@ void checkConnectToServer(int timeout) {
 
       Serial.println("POST request to Karen");
       Serial.println(response);
+
       break;
     }
+  }
+  if (i == 255) {
+    Serial.println("Reset..");
+    ESP.restart();
   }
 }
 
@@ -40,8 +46,12 @@ String POSTRequest(char link[], String contentType, String payload) {
   http.begin(wifiClient, link);
   http.addHeader("Content-Type", contentType);
   int httpCode = http.POST(payload);
-  if (httpCode > 0) {
+  Serial.println(httpCode);
+  if (httpCode == 200) {
     response = http.getString();
+    ledBlink(5, 300);
+  } else {
+    response = "Error from server: " + http.getString();
   }
   http.end();
   return response;
