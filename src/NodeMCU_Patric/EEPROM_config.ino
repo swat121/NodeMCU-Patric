@@ -1,5 +1,5 @@
 //================================================================
-void writeToEEPROM(String ssid, String pass) {
+void writeWiFiDataToEEPROM(String ssid, String pass) {
   Serial.println();
   Serial.println("======================Start-Write-To-EEPROM===========================");
   int ssidLenght = ssid.length();
@@ -37,13 +37,13 @@ void writeToEEPROM(String ssid, String pass) {
   EEPROM.write(j, '&');
   Serial.print("Wrote: ");
   Serial.println("&");
-  
+
   EEPROM.commit();
   EEPROM.end();
   Serial.println("======================END-Write-To-EEPROM===========================");
 }
 //================================================================
-void readFromEEPROM() {
+void readWiFiDataFromEEPROM() {
   Serial.println();
   Serial.println("======================Start-Read-From-EEPROM===========================");
   char readSSID;
@@ -56,7 +56,7 @@ void readFromEEPROM() {
   delay(200);
 
   status = boolean(EEPROM.read(0));
-  
+
   while (readSSID != '|') {
     readSSID = char(EEPROM.read(i));
     if (readSSID == '|') {
@@ -93,6 +93,31 @@ void readFromEEPROM() {
   Serial.println(ssid);
   Serial.print("pass from EEPROM: ");
   Serial.println(pass);
-  Serial.println("======================END-Read-To-EEPROM===========================");
+  Serial.println("======================END-Read-From-EEPROM===========================");
+}
+//================================================================
+
+void writeToEEPROM(String data) {
+  Serial.println();
+  Serial.println("======================Start-Write-To-EEPROM===========================");
+  Serial.println(data);
+  EEPROM.begin(1024);
+  EEPROM.put(85, data);
+  EEPROM.commit();
+  EEPROM.end();
+  Serial.println("======================End-Write-To-EEPROM===========================");
+}
+//================================================================
+
+String readFromEEPROM() {
+  Serial.println();
+  Serial.println("======================Start-Read-From-EEPROM===========================");
+  String data;
+  Serial.println(data);
+  EEPROM.begin(1024);
+  EEPROM.get(85, data);
+  EEPROM.end();
+  Serial.println("======================End-Read-From-EEPROM===========================");
+  return data;
 }
 //================================================================

@@ -1,4 +1,4 @@
-void checkConnectToServer(int timeout) {
+void connectToServer(int timeout) {
   String whiteIp = parts[0] + "." + parts[1] + "." + parts[2] + ".";
   String payload;
   String ip;
@@ -30,10 +30,12 @@ void checkConnectToServer(int timeout) {
       Serial.println("POST request to Karen");
       Serial.println(response);
 
+      String hostToEEPROM = String(host);
+      writeToEEPROM(hostToEEPROM);
       break;
     }
   }
-  if (i == 255) {
+  if (i >= 255) {
     Serial.println("Reset..");
     ESP.restart();
   }
@@ -82,4 +84,17 @@ String ping(char link[], int timeout) {
   }
   http.end();
   return response;
+}
+
+boolean checkConnectionToServer(String ip) {
+  char ipChar[100];
+  int timeout = 5000;
+  ip.toCharArray(ipChar, ip.length());
+  if (ping(ipChar, timeout) == "pong") {
+    Serial.print("Karen host is: ");
+    Serial.println(ipChar);
+    return true;      
+  } else {
+    return false;
+  }
 }

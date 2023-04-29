@@ -70,7 +70,7 @@ void handleFormSubmit() {
     Serial.println(arg2);
 
     server.send(200, "text/plain", "OK");
-    writeToEEPROM(arg1, arg2);
+    writeWiFiDataToEEPROM(arg1, arg2);
     delay(3000);
     Serial.println("Reset..");
     ESP.restart();

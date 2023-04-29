@@ -37,11 +37,18 @@ void wifiModeSTA(String WIFI_SSID, String WIFI_PASSWORD) {
   Serial.println();
 
   splitString(WiFi.localIP().toString());
-  
+
   data.mac = WiFi.macAddress();
   data.ssid = ssid;
 
-  checkConnectToServer(700);
+  String ip = readFromEEPROM();
+  Serial.print("Ip from EEPROM = ");
+  Serial.println(ip);
+  if (ip.length() == 0) {
+    connectToServer(1500);
+  } else if(!checkConnectionToServer(ip)) {
+    connectToServer(1500);
+  }
   setCommands();
 }
 //=======================================================================================================================
