@@ -2,6 +2,8 @@
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
 
+#include <uri/UriBraces.h>
+
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
