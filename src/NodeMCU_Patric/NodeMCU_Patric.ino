@@ -64,8 +64,8 @@ ESP8266WebServer server(80);
 #define ONE_WIRE_BUS 0  //D3
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-float temperature;
 unsigned long timerTemp;
+int ds18b20Count = 0;
 //------------------------------------------------------------------------
 
 String parts[4];
@@ -76,8 +76,11 @@ void setup() {
 
   Serial.begin(115200);
   delay(100);
+  Serial.println();
+  Serial.println("Branch: develop");
   //------------------------------------------------------------------------
   sensors.begin();
+  ds18b20Count = sensors.getDeviceCount();
   //------------------------------------------------------------------------
 
   pinMode(PIN_LED_Good, OUTPUT);

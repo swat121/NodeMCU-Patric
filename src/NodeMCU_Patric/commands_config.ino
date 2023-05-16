@@ -7,7 +7,7 @@ void setCommands() {
     server.on("/help", HTTP_GET, getHelp);
     server.on(UriBraces("/relays/{}"), HTTP_PUT, relayHandle);
     server.on("/power-module", HTTP_PUT, putPowerModule);
-    server.on("/temperature", HTTP_GET, getDataTemp);
+    server.on(UriBraces("/temperature/{}"), HTTP_GET, getDataTemp);
     server.on("/light", HTTP_GET, getLight);
     server.on("/message", HTTP_PUT, putMessage);
     server.on("/status", HTTP_GET, getStatus);
@@ -99,7 +99,14 @@ void putPowerModule() {
 //-----------------------------------------------------------------------------------------------------
 
 void getDataTemp() {
-  sendMessage("temp", String(getTemperature()));
+  int id = server.pathArg(0).toInt();
+  float responce = getTemperatureByIndex(id);
+
+  if (responce == -127.00) {
+    sendMessage("temp", "Temperature device not found!", 404);
+  } else {
+    sendMessage("temp", String(responce));
+  }
   ledBlink(1, 100);
 }
 
@@ -121,15 +128,23 @@ void putMessage() {
 void sendMessage(String key, String value) {
   StaticJsonDocument<200> doc;
   String s;
-  doc["name"] = "Patric";
+  doc["name"] = data.name;
   doc[key] = value;
   serializeJson(doc, s);
   server.send(200, "application/json", s);
 }
+
+void sendMessage(String key, String value, int statusCode) {
+  StaticJsonDocument<200> doc;
+  String s;
+  doc["name"] = data.name;
+  doc[key] = value;
+  serializeJson(doc, s);
+  server.send(statusCode, "application/json", s);
+}
 //-----------------------------------------------------------------------------------------------------
 
-float getTemperature() {
+float getTemperatureByIndex(int idParam) {
   sensors.requestTemperatures();
-  temperature = sensors.getTempCByIndex(0);
-  return temperature;
+  return sensors.getTempCByIndex(idParam);
 }
