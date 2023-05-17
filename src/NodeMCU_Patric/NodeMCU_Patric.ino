@@ -48,8 +48,8 @@ boolean Relay2 = false;
 #define PIN_Relay3 15  //D8
 boolean Relay3 = false;
 
-#define PIN_Light 4  //D2
-boolean Light = false;
+#define PIN_Power_Module 4  //D2
+boolean PowerStatus = false;
 
 //------------------------------------------------------------------------
 
@@ -95,8 +95,8 @@ void setup() {
   pinMode(PIN_Relay3, OUTPUT);
   digitalWrite(PIN_Relay3, LOW);
 
-  pinMode(PIN_Light, OUTPUT);
-  analogWrite(PIN_Light, 0);
+  pinMode(PIN_Power_Module, OUTPUT);
+  analogWrite(PIN_Power_Module, 0);
 
   //---------------------------------------------------------------------------------------------------
   readFromEEPROM();
