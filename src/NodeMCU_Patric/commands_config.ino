@@ -4,14 +4,14 @@ void setCommands() {
   Serial.println("==================SET-COMMAND===============");
   Serial.println(WifiMode);
   if (WifiMode == "STA") {
-    server.on("/help", HTTP_GET, getHelp);
-    server.on(UriBraces("/relays/{}"), HTTP_PUT, relayHandle);
-    server.on("/power-module", HTTP_PUT, putPowerModule);
-    server.on(UriBraces("/temperature/{}"), HTTP_GET, getDataTemp);
-    server.on("/light", HTTP_GET, getLight);
-    server.on("/message", HTTP_PUT, putMessage);
-    server.on("/status", HTTP_GET, getStatus);
-    server.on("/configuration", HTTP_GET, getConfig);
+    server.on("/api/v1/help", HTTP_GET, getHelp);
+    server.on(UriBraces("/api/v1/relays/{}"), HTTP_PUT, relayHandle);
+    server.on("/api/v1/power-module", HTTP_PUT, putPowerModule);
+    server.on(UriBraces("/api/v1/temperature/{}"), HTTP_GET, getDataTemp);
+    server.on("/api/v1/light", HTTP_GET, getLight);
+    server.on("/api/v1/message", HTTP_PUT, putMessage);
+    server.on("/api/v1/status", HTTP_GET, getStatus);
+    server.on("/api/v1/configuration", HTTP_GET, getConfig);
   }
   if (WifiMode == "AP") {
     server.on("/", HTTP_GET, handleMainHtmlPage);
@@ -22,7 +22,7 @@ void setCommands() {
 //-----------------------------------------------------------------------------------------------------
 
 void getConfig() {
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<bodySize> doc;
   JsonObject config = doc.createNestedObject("config");
 
   JsonObject sensor = config.createNestedObject("sensor");
@@ -45,19 +45,37 @@ void getConfig() {
 //-----------------------------------------------------------------------------------------------------
 
 void getHelp() {
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<bodySize> doc;;
   JsonObject help = doc.createNestedObject("help");
+  JsonObject status = help.createNestedObject("status");
 
-  help["status"] = "GET /status";
+  status["method"] = "GET";
+  status["endpoint"] = "/api/v1/status";
 
   JsonObject sensor = help.createNestedObject("sensor");
-  sensor["temp"] = "GET /temperature/{id}";
-  sensor["light"] = "GET /light";
+
+  JsonObject temp = sensor.createNestedObject("temp");
+
+  temp["method"] = "GET";
+  temp["endpoint"] = "/api/v1/temperature/{id}";
+
+  JsonObject light = sensor.createNestedObject("light");
+
+  light["method"] = "GET";
+  light["endpoint"] = "/api/v1/light";
 
 
   JsonObject switcher = help.createNestedObject("switcher");
-  switcher["relay"] = "PUT /relays/{id}";
-  switcher["power-module"] = "PUT /power-module";
+
+  JsonObject relay = switcher.createNestedObject("relay");
+
+  relay["method"] = "PUT";
+  relay["endpoint"] = "/api/v1/relays/{id}";
+
+  JsonObject powerModule = switcher.createNestedObject("power-module");
+
+  powerModule["method"] = "PUT";
+  powerModule["endpoint"] = "/api/v1/powerModule";
 
   sendMessage(doc, 200);
   ledBlink(1, 100);
@@ -66,15 +84,12 @@ void getHelp() {
 //-----------------------------------------------------------------------------------------------------
 
 void getStatus() {
-  StaticJsonDocument<200> doc;
-  String s;
-  doc["name"] = data.name;
+  StaticJsonDocument<bodySize> doc;
   doc["relay1"] = String(digitalRead(PIN_Relay1));
   doc["relay2"] = String(digitalRead(PIN_Relay2));
   doc["relay3"] = String(digitalRead(PIN_Relay3));
   doc["powerModule"] = String(digitalRead(PIN_Power_Module));
-  serializeJson(doc, s);
-  server.send(200, "application/json", s);
+  sendMessage(doc, 200);
   ledBlink(1, 100);
 }
 
@@ -182,7 +197,7 @@ void sendMessage(String key, String value, int statusCode) {
   server.send(statusCode, "application/json", s);
 }
 
-void sendMessage(StaticJsonDocument<200> doc, int statusCode) {
+void sendMessage(StaticJsonDocument<bodySize> doc, int statusCode) {
   String s;
   doc["name"] = data.name;
   serializeJson(doc, s);
