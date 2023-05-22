@@ -39,16 +39,16 @@ boolean stat = true;
 #define PIN_LED_Good 2    //D4
 #define PIN_LED_Error 14  //D5
 //------------------------------------------------------------------------
-#define PIN_Relay1 12  //D6
+int PIN_Relay1 = 12;  //D6
 boolean Relay1 = false;
 
-#define PIN_Relay2 13  //D7
+int PIN_Relay2 = 13;  //D7
 boolean Relay2 = false;
 
-#define PIN_Relay3 15  //D8
+int PIN_Relay3 = 15;  //D8
 boolean Relay3 = false;
 
-#define PIN_Power_Module 4  //D2
+int PIN_Power_Module = 4;  //D2
 boolean PowerStatus = false;
 
 //------------------------------------------------------------------------
@@ -61,7 +61,7 @@ ESP8266WebServer server(80);
 //------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
-#define ONE_WIRE_BUS 0  //D3
+int ONE_WIRE_BUS = 0;  //D3
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 unsigned long timerTemp;

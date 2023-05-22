@@ -11,6 +11,7 @@ void setCommands() {
     server.on("/light", HTTP_GET, getLight);
     server.on("/message", HTTP_PUT, putMessage);
     server.on("/status", HTTP_GET, getStatus);
+    server.on("/configuration", HTTP_GET, getConfig);
   }
   if (WifiMode == "AP") {
     server.on("/", HTTP_GET, handleMainHtmlPage);
@@ -20,8 +21,30 @@ void setCommands() {
 
 //-----------------------------------------------------------------------------------------------------
 
+void getConfig() {
+  StaticJsonDocument<200> doc;
+  JsonObject config = doc.createNestedObject("config");
+
+  JsonObject sensor = config.createNestedObject("sensor");
+  JsonArray temp = sensor.createNestedArray("temp");
+  temp.add(ONE_WIRE_BUS);
+
+
+  JsonObject switcher = config.createNestedObject("switcher");
+  JsonArray relay = switcher.createNestedArray("relay");
+  JsonArray powerModule = switcher.createNestedArray("power-module");
+  relay.add(PIN_Relay1);
+  relay.add(PIN_Relay2);
+  relay.add(PIN_Relay3);
+  powerModule.add(PIN_Power_Module);
+ 
+  sendMessage(doc, 200);
+  ledBlink(1, 100);
+}
+
+//-----------------------------------------------------------------------------------------------------
+
 void getHelp() {
-  String s;
   StaticJsonDocument<200> doc;
   JsonObject help = doc.createNestedObject("help");
 
