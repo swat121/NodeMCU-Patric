@@ -37,7 +37,7 @@ void writeToEEPROM(String ssid, String pass) {
   EEPROM.write(j, '&');
   Serial.print("Wrote: ");
   Serial.println("&");
-  
+
   EEPROM.commit();
   EEPROM.end();
   Serial.println("======================END-Write-To-EEPROM===========================");
@@ -56,7 +56,7 @@ void readFromEEPROM() {
   delay(200);
 
   status = boolean(EEPROM.read(0));
-  
+
   while (readSSID != '|') {
     readSSID = char(EEPROM.read(i));
     if (readSSID == '|') {

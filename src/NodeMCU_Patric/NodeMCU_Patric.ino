@@ -32,6 +32,11 @@ String ssid;
 String pass;
 String WifiMode;
 //------------------------------------------------------------------------
+
+#define PIN_BUTTON 5 //D1
+
+//------------------------------------------------------------------------
+
 unsigned long timer;
 boolean stat = true;
 #define PIN_LED_Good 2    //D4
@@ -52,7 +57,7 @@ boolean Light = false;
 //------------------------------------------------------------------------
 
 boolean backlightStat = false;
-boolean connectStat = false;
+boolean flagForCheckConnect = false;
 
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
@@ -93,18 +98,18 @@ void setup() {
   pinMode(PIN_Light, OUTPUT);
   analogWrite(PIN_Light, 0);
 
+  pinMode(PIN_BUTTON, INPUT);
   //---------------------------------------------------------------------------------------------------
+  
   readFromEEPROM();
+
   //---------------------------------------------------------------------------------------------------
   if (status) {
     WifiMode = "STA";
     wifiModeSTA(ssid, pass);
-    server.begin();  //Запускаем сервер
-    Serial.println("Server listening");
   } else {
     WifiMode = "AP";
     wifiModeAP();
-    server.begin();
   }
   //-----------------------------------------------------------------------------------------------------
 }
@@ -112,23 +117,28 @@ void setup() {
 //-----------------------------------LOOP--------------------------------------------------------------
 void loop() {
   if (WifiMode == "STA") {
-    checkConnect();
+    if (checkConnect()) {
+      setupWifiConfig();
+    }
   }
   server.handleClient();
 }
 
 //-----------------------------------------------------------------------------------------------------
 
-void checkConnect() {
+bool checkConnect() {
   if (WiFi.status() != WL_CONNECTED) {
     ledDisconnect();
-    connectStat = true;
+    flagForCheckConnect = true;
+    return false;
   } else {
-    if (connectStat == true) {
+    if (flagForCheckConnect == true) {
       ledBlink(3, 100);
-      connectStat = false;
+      flagForCheckConnect = false;
       digitalWrite(PIN_LED_Error, LOW);
+      return true;
     }
+    return false;
   }
 }
 
