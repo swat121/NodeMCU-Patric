@@ -7,6 +7,11 @@
 
 #include <EEPROM.h>
 
+#include "GyverButton.h"
+
+#define BTN_PIN 5
+GButton butt1(BTN_PIN);
+
 //------------------------------------------------------------------------
 struct Data {
   String name = "patric";
@@ -33,10 +38,6 @@ String pass;
 String WifiMode;
 //------------------------------------------------------------------------
 
-#define PIN_BUTTON 5 //D1
-
-//------------------------------------------------------------------------
-
 unsigned long timer;
 boolean stat = true;
 #define PIN_LED_Good 2    //D4
@@ -56,8 +57,8 @@ boolean Light = false;
 
 //------------------------------------------------------------------------
 
-boolean backlightStat = false;
 boolean flagForCheckConnect = false;
+boolean flagIsConnectToServer = true;
 
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
@@ -79,6 +80,12 @@ void setup() {
 
   Serial.begin(115200);
   delay(100);
+
+  butt1.setTimeout(3000);
+  butt1.setType(HIGH_PULL);
+
+  butt1.setDirection(NORM_OPEN);
+
   //------------------------------------------------------------------------
   sensors.begin();
   //------------------------------------------------------------------------
@@ -98,7 +105,6 @@ void setup() {
   pinMode(PIN_Light, OUTPUT);
   analogWrite(PIN_Light, 0);
 
-  pinMode(PIN_BUTTON, INPUT);
   //---------------------------------------------------------------------------------------------------
   
   readFromEEPROM();
@@ -116,10 +122,30 @@ void setup() {
 
 //-----------------------------------LOOP--------------------------------------------------------------
 void loop() {
+  butt1.tick();
+  if (butt1.isHolded()) {
+    Serial.println("Button is holding");
+    
+    digitalWrite(PIN_LED_Error, LOW);
+    digitalWrite(PIN_LED_Good, LOW);
+    changeWifiMode();
+  }
+
   if (WifiMode == "STA") {
-    if (checkConnect()) {
-      setupWifiConfig();
+    if (WiFi.status() != WL_CONNECTED) {
+      ledDisconnect();
+      return;
     }
+    digitalWrite(PIN_LED_Error, LOW);
+
+    if (flagIsConnectToServer) {
+      setupWifiConfig();
+      ledBlink(3, 100);
+      flagIsConnectToServer = false;
+    }
+    // if (checkConnect()) {
+    //   setupWifiConfig();
+    // }
   }
   server.handleClient();
 }
@@ -157,6 +183,7 @@ void ledBlink(int count, int microsecond) {
 
 void ledDisconnect() {
   if (millis() - timer > 1000) {
+    Serial.println("Wifi not connected");
     timer = millis();
     digitalWrite(PIN_LED_Error, stat);
     stat = !stat;

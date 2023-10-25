@@ -3,7 +3,7 @@ void wifiModeSTA(String WIFI_SSID, String WIFI_PASSWORD) {
   Serial.println();
   Serial.println("======================Wifi-Mode-STA===========================");
   byte tries = 15;
-  //For STA only or AP + STA mode
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
@@ -15,7 +15,7 @@ void wifiModeSTA(String WIFI_SSID, String WIFI_PASSWORD) {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Non Connecting to WiFi..");
   }
-  server.begin()
+  server.begin();
 }
 
 //=======================================================================================================================
@@ -59,7 +59,7 @@ void setupWifiConfig() {
   data.mac = WiFi.macAddress();
   data.ssid = ssid;
 
-  checkConnectToService(700);
+  connectToServer(700);
   setCommands();
 
   server.begin();  //Запускаем сервер
