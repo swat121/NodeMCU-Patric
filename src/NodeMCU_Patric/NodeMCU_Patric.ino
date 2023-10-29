@@ -9,8 +9,9 @@
 
 #include "GyverButton.h"
 
+// Button variables
 #define BTN_PIN 5
-GButton butt1(BTN_PIN);
+GButton switchModeButton(BTN_PIN);
 
 //------------------------------------------------------------------------
 struct Data {
@@ -81,10 +82,10 @@ void setup() {
   Serial.begin(115200);
   delay(100);
 
-  butt1.setTimeout(3000);
-  butt1.setType(HIGH_PULL);
+  switchModeButton.setTimeout(5000);
+  switchModeButton.setType(HIGH_PULL);
 
-  butt1.setDirection(NORM_OPEN);
+  switchModeButton.setDirection(NORM_OPEN);
 
   //------------------------------------------------------------------------
   sensors.begin();
@@ -122,8 +123,8 @@ void setup() {
 
 //-----------------------------------LOOP--------------------------------------------------------------
 void loop() {
-  butt1.tick();
-  if (butt1.isHolded()) {
+  switchModeButton.tick();
+  if (switchModeButton.isHolded()) {
     Serial.println("Button is holding");
     
     digitalWrite(PIN_LED_Error, LOW);
@@ -143,29 +144,8 @@ void loop() {
       ledBlink(3, 100);
       flagIsConnectToServer = false;
     }
-    // if (checkConnect()) {
-    //   setupWifiConfig();
-    // }
   }
   server.handleClient();
-}
-
-//-----------------------------------------------------------------------------------------------------
-
-bool checkConnect() {
-  if (WiFi.status() != WL_CONNECTED) {
-    ledDisconnect();
-    flagForCheckConnect = true;
-    return false;
-  } else {
-    if (flagForCheckConnect == true) {
-      ledBlink(3, 100);
-      flagForCheckConnect = false;
-      digitalWrite(PIN_LED_Error, LOW);
-      return true;
-    }
-    return false;
-  }
 }
 
 //-----------------------------------------------------------------------------------------------------
