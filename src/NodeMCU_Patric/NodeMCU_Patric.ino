@@ -9,6 +9,12 @@
 
 #include <EEPROM.h>
 
+#include "GyverButton.h"
+
+// Button variables
+#define BTN_PIN 5
+GButton switchModeButton(BTN_PIN);
+
 //------------------------------------------------------------------------
 struct Data {
   String name = "patric";
@@ -34,6 +40,7 @@ String ssid;
 String pass;
 String WifiMode;
 //------------------------------------------------------------------------
+
 unsigned long timer;
 boolean stat = true;
 #define PIN_LED_Good 2    //D4
@@ -53,8 +60,8 @@ boolean PowerStatus = false;
 
 //------------------------------------------------------------------------
 
-boolean backlightStat = false;
-boolean connectStat = false;
+boolean flagForCheckConnect = false;
+boolean flagIsConnectToServer = true;
 
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
@@ -78,8 +85,15 @@ void setup() {
 
   Serial.begin(115200);
   delay(100);
+
+  switchModeButton.setTimeout(5000);
+  switchModeButton.setType(HIGH_PULL);
+
+  switchModeButton.setDirection(NORM_OPEN);
+
   Serial.println();
   Serial.println("Branch: develop");
+
   //------------------------------------------------------------------------
   sensors.begin();
   ds18b20Count = sensors.getDeviceCount();
@@ -101,42 +115,45 @@ void setup() {
   analogWrite(PIN_Power_Module, 0);
 
   //---------------------------------------------------------------------------------------------------
+  
   readFromEEPROM();
+
   //---------------------------------------------------------------------------------------------------
   if (status) {
     WifiMode = "STA";
     wifiModeSTA(ssid, pass);
-    server.begin();  //Запускаем сервер
-    Serial.println("Server listening");
   } else {
     WifiMode = "AP";
     wifiModeAP();
-    server.begin();
   }
   //-----------------------------------------------------------------------------------------------------
 }
 
 //-----------------------------------LOOP--------------------------------------------------------------
 void loop() {
-  if (WifiMode == "STA") {
-    checkConnect();
+  switchModeButton.tick();
+  if (switchModeButton.isHolded()) {
+    Serial.println("Button is holding");
+    
+    digitalWrite(PIN_LED_Error, LOW);
+    digitalWrite(PIN_LED_Good, LOW);
+    changeWifiMode();
   }
-  server.handleClient();
-}
 
-//-----------------------------------------------------------------------------------------------------
+  if (WifiMode == "STA") {
+    if (WiFi.status() != WL_CONNECTED) {
+      ledDisconnect();
+      return;
+    }
+    digitalWrite(PIN_LED_Error, LOW);
 
-void checkConnect() {
-  if (WiFi.status() != WL_CONNECTED) {
-    ledDisconnect();
-    connectStat = true;
-  } else {
-    if (connectStat == true) {
+    if (flagIsConnectToServer) {
+      setupWifiConfig();
       ledBlink(3, 100);
-      connectStat = false;
-      digitalWrite(PIN_LED_Error, LOW);
+      flagIsConnectToServer = false;
     }
   }
+  server.handleClient();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -154,6 +171,7 @@ void ledBlink(int count, int microsecond) {
 
 void ledDisconnect() {
   if (millis() - timer > 1000) {
+    Serial.println("Wifi not connected");
     timer = millis();
     digitalWrite(PIN_LED_Error, stat);
     stat = !stat;

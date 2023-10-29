@@ -1,9 +1,9 @@
-void checkConnectToServer(int timeout) {
+void connectToServer(int timeout) {
   String whiteIp = parts[0] + "." + parts[1] + "." + parts[2] + ".";
   String payload;
   String ip;
   char host[100];
-  char karen[100];
+  char karenHost[100];
   int i;
   for (i = 1; i < 255; i++) {
     sprintf(host, "http://%s%d:%d%s", whiteIp.c_str(), i, 8080, "/ping");
@@ -14,8 +14,8 @@ void checkConnectToServer(int timeout) {
       ip = whiteIp + i;
       Serial.println(ip);
 
-      sprintf(karen, "http://%s%d:%d%s", whiteIp.c_str(), i, 8080, "/clients");
-      Serial.println(karen);
+      sprintf(karenHost, "http://%s%d:%d%s", whiteIp.c_str(), i, 8080, "/clients");
+      Serial.println(karenHost);
 
       StaticJsonDocument<200> doc;
       data.ip = WiFi.localIP().toString();
@@ -24,7 +24,7 @@ void checkConnectToServer(int timeout) {
       doc["mac"] = data.mac;
       doc["ssid"] = data.ssid;
       serializeJson(doc, payload);
-      String response = POSTRequest(karen, "application/json", payload);
+      String response = POSTRequest(karenHost, "application/json", payload);
 
 
       Serial.println("POST request to Karen");
@@ -33,7 +33,7 @@ void checkConnectToServer(int timeout) {
       break;
     }
   }
-  if (i == 255) {
+  if (i >= 255) {
     Serial.println("Reset..");
     ESP.restart();
   }
