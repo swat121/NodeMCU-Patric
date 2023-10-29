@@ -2,6 +2,8 @@
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
 
+#include <uri/UriBraces.h>
+
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -44,17 +46,17 @@ boolean stat = true;
 #define PIN_LED_Good 2    //D4
 #define PIN_LED_Error 14  //D5
 //------------------------------------------------------------------------
-#define PIN_Relay1 12  //D6
+int PIN_Relay1 = 12;  //D6
 boolean Relay1 = false;
 
-#define PIN_Relay2 13  //D7
+int PIN_Relay2 = 13;  //D7
 boolean Relay2 = false;
 
-#define PIN_Relay3 15  //D8
+int PIN_Relay3 = 15;  //D8
 boolean Relay3 = false;
 
-#define PIN_Light 4  //D2
-boolean Light = false;
+int PIN_Power_Module = 4;  //D2
+boolean PowerStatus = false;
 
 //------------------------------------------------------------------------
 
@@ -66,15 +68,17 @@ ESP8266WebServer server(80);
 //------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
-#define ONE_WIRE_BUS 0  //D3
+int ONE_WIRE_BUS = 0;  //D3
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-float temperature;
 unsigned long timerTemp;
+int ds18b20Count = 0;
 //------------------------------------------------------------------------
 
 String parts[4];
 //------------------------------------------------------------------------
+
+#define bodySize 500
 
 
 void setup() {
@@ -87,8 +91,12 @@ void setup() {
 
   switchModeButton.setDirection(NORM_OPEN);
 
+  Serial.println();
+  Serial.println("Branch: develop");
+
   //------------------------------------------------------------------------
   sensors.begin();
+  ds18b20Count = sensors.getDeviceCount();
   //------------------------------------------------------------------------
 
   pinMode(PIN_LED_Good, OUTPUT);
@@ -103,8 +111,8 @@ void setup() {
   pinMode(PIN_Relay3, OUTPUT);
   digitalWrite(PIN_Relay3, LOW);
 
-  pinMode(PIN_Light, OUTPUT);
-  analogWrite(PIN_Light, 0);
+  pinMode(PIN_Power_Module, OUTPUT);
+  analogWrite(PIN_Power_Module, 0);
 
   //---------------------------------------------------------------------------------------------------
   
