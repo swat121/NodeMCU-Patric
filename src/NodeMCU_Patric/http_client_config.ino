@@ -6,7 +6,7 @@ void connectToServer(int timeout) {
   char karenHost[100];
   int i;
   for (i = 1; i < 255; i++) {
-    sprintf(host, "http://%s%d:%d%s", whiteIp.c_str(), i, 8080, "/ping");
+    sprintf(host, "http://%s%d:%d/api/v1%s", whiteIp.c_str(), i, 8080, "/ping");
     Serial.println(host);
     if (ping(host, timeout) == "pong") {
 
@@ -14,7 +14,7 @@ void connectToServer(int timeout) {
       ip = whiteIp + i;
       Serial.println(ip);
 
-      sprintf(karenHost, "http://%s%d:%d%s", whiteIp.c_str(), i, 8080, "/clients");
+      sprintf(karenHost, "http://%s%d:%d/api/v1%s", whiteIp.c_str(), i, 8080, "/clients");
       Serial.println(karenHost);
 
       StaticJsonDocument<200> doc;

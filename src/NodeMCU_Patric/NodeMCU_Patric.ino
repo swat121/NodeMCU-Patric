@@ -86,7 +86,7 @@ void setup() {
   Serial.begin(115200);
   delay(100);
 
-  switchModeButton.setTimeout(5000);
+  switchModeButton.setTimeout(3000);
   switchModeButton.setType(HIGH_PULL);
 
   switchModeButton.setDirection(NORM_OPEN);
@@ -137,6 +137,7 @@ void loop() {
     
     digitalWrite(PIN_LED_Error, LOW);
     digitalWrite(PIN_LED_Good, LOW);
+    ledBlink(3, 100);
     changeWifiMode();
   }
 
