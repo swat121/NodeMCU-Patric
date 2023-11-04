@@ -78,7 +78,7 @@ int ds18b20Count = 0;
 String parts[4];
 //------------------------------------------------------------------------
 
-#define bodySize 500
+#define bodySize 1024
 
 
 void setup() {

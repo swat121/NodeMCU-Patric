@@ -22,23 +22,9 @@ void setCommands() {
 //-----------------------------------------------------------------------------------------------------
 
 void getConfig() {
-  StaticJsonDocument<bodySize> doc;
-  JsonObject config = doc.createNestedObject("config");
-
-  JsonObject sensor = config.createNestedObject("sensor");
-  JsonArray temp = sensor.createNestedArray("temp");
-  temp.add(ONE_WIRE_BUS);
-
-
-  JsonObject switcher = config.createNestedObject("switcher");
-  JsonArray relay = switcher.createNestedArray("relay");
-  JsonArray powerModule = switcher.createNestedArray("power-module");
-  relay.add(PIN_Relay1);
-  relay.add(PIN_Relay2);
-  relay.add(PIN_Relay3);
-  powerModule.add(PIN_Power_Module);
+  String doc = createBoardConfigObject();
  
-  sendMessage(doc, 200);
+  //sendMessage(doc, 200);
   ledBlink(1, 100);
 }
 

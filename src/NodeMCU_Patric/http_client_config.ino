@@ -1,9 +1,11 @@
 void connectToServer(int timeout) {
   String whiteIp = parts[0] + "." + parts[1] + "." + parts[2] + ".";
-  String payload;
+  String clientPayload;
+  String boardPayload;
   String ip;
   char host[100];
-  char karenHost[100];
+  char clientApi[100];
+  char boardApi[100];
   int i;
   for (i = 1; i < 255; i++) {
     sprintf(host, "http://%s%d:%d/api/v1%s", whiteIp.c_str(), i, 8080, "/ping");
@@ -14,8 +16,8 @@ void connectToServer(int timeout) {
       ip = whiteIp + i;
       Serial.println(ip);
 
-      sprintf(karenHost, "http://%s%d:%d/api/v1%s", whiteIp.c_str(), i, 8080, "/clients");
-      Serial.println(karenHost);
+      sprintf(clientApi, "http://%s%d:%d/api/v1%s", whiteIp.c_str(), i, 8080, "/clients");
+      Serial.println(clientApi);
 
       StaticJsonDocument<200> doc;
       data.ip = WiFi.localIP().toString();
@@ -23,12 +25,21 @@ void connectToServer(int timeout) {
       doc["ip"] = data.ip;
       doc["mac"] = data.mac;
       doc["ssid"] = data.ssid;
-      serializeJson(doc, payload);
-      String response = POSTRequest(karenHost, "application/json", payload);
+      serializeJson(doc, clientPayload);
+      String response1 = POSTRequest(clientApi, "application/json", clientPayload);
 
+      Serial.println("POST /clients request to Karen");
+      Serial.println(response1);
 
-      Serial.println("POST request to Karen");
-      Serial.println(response);
+      sprintf(boardApi, "http://%s%d:%d/api/v1%s", whiteIp.c_str(), i, 8080, "/board-config");
+      Serial.println(boardApi);
+
+      boardPayload = createBoardConfigObject();
+      
+      String response2 = POSTRequest(boardApi, "application/json", boardPayload);
+
+      Serial.println("POST /board-config request to Karen");
+      Serial.println(response2);
 
       break;
     }
@@ -82,4 +93,39 @@ String ping(char link[], int timeout) {
   }
   http.end();
   return response;
+}
+
+String createBoardConfigObject() {
+  StaticJsonDocument<bodySize> jsonDoc;
+  String boardPayload;
+  jsonDoc["name"] = data.name;
+
+  JsonObject setting = jsonDoc.createNestedObject("setting");
+
+  JsonArray sensors = setting.createNestedArray("sensors");
+  JsonObject temperature = sensors.createNestedObject();
+  temperature["moduleName"] = "temperature";
+  JsonArray temperatureData = temperature.createNestedArray("data");
+  JsonObject tempData1 = temperatureData.createNestedObject();
+  tempData1["moduleId"] = "1";
+  tempData1["pin"] = ONE_WIRE_BUS;
+
+  JsonArray switchers = setting.createNestedArray("switchers");
+  JsonObject relay = switchers.createNestedObject();
+  relay["moduleName"] = "relay";
+  JsonArray relayData = relay.createNestedArray("data");
+  JsonObject relayData1 = relayData.createNestedObject();
+  relayData1["moduleId"] = "1";
+  relayData1["pin"] = PIN_Relay1;
+
+  JsonArray trackers = setting.createNestedArray("trackers");
+  // JsonObject relay = switchers.createNestedObject();
+  // relay["moduleName"] = "relay";
+  // JsonArray relayData = relay.createNestedArray("data");
+  // JsonObject relayData1 = relayData.createNestedObject();
+  // tempData1["moduleId"] = "1";
+  // tempData1["pin"] = PIN_Relay1.toString;
+
+  serializeJson(jsonDoc, boardPayload);
+  return boardPayload;
 }
