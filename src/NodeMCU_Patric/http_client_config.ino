@@ -118,14 +118,6 @@ String createBoardConfigObject() {
   relayData1["moduleId"] = "1";
   relayData1["pin"] = PIN_Relay1;
 
-  JsonArray trackers = setting.createNestedArray("trackers");
-  // JsonObject relay = switchers.createNestedObject();
-  // relay["moduleName"] = "relay";
-  // JsonArray relayData = relay.createNestedArray("data");
-  // JsonObject relayData1 = relayData.createNestedObject();
-  // tempData1["moduleId"] = "1";
-  // tempData1["pin"] = PIN_Relay1.toString;
-
   serializeJson(jsonDoc, boardPayload);
   return boardPayload;
 }

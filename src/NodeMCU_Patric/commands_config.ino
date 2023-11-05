@@ -5,7 +5,7 @@ void setCommands() {
   Serial.println(WifiMode);
   if (WifiMode == "STA") {
     server.on("/api/v1/help", HTTP_GET, getHelp);
-    server.on(UriBraces("/api/v1/relays/{}"), HTTP_PUT, relayHandle);
+    server.on(UriBraces("/api/v1/switchers/relay/{}"), HTTP_PUT, relayHandle);
     server.on("/api/v1/power-module", HTTP_PUT, putPowerModule);
     server.on(UriBraces("/api/v1/temperature/{}"), HTTP_GET, getDataTemp);
     server.on("/api/v1/light", HTTP_GET, getLight);
