@@ -1,6 +1,7 @@
 #include "ESP8266WebServer.h"
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
+#include "WiFiManager.h"
 
 #include <uri/UriBraces.h>
 
@@ -30,9 +31,7 @@ Data data;
 #define AP_PASS "12345678"
 
 //------------------------------------------------------------------------
-IPAddress local_IP(192, 168, 4, 22);
-IPAddress gateway(192, 168, 4, 9);
-IPAddress subnet(255, 255, 255, 0);
+
 
 //------------------------------------------------------------------------
 boolean status = true;
@@ -65,6 +64,7 @@ boolean flagIsConnectToServer = true;
 
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
+WiFiManager wifiManager(server);
 //------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
@@ -121,10 +121,13 @@ void setup() {
   //---------------------------------------------------------------------------------------------------
   if (status) {
     WifiMode = "STA";
-    wifiModeSTA(ssid, pass);
+    wifiManager.wifiModeSTA(ssid, pass);
   } else {
     WifiMode = "AP";
-    wifiModeAP();
+    wifiManager.wifiModeAP(AP_SSID, AP_PASS);
+    setCommands();
+
+    server.begin();
   }
   //-----------------------------------------------------------------------------------------------------
 }

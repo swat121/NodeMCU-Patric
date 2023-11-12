@@ -1,49 +1,17 @@
-//==========================================================================================================================
-void wifiModeSTA(String WIFI_SSID, String WIFI_PASSWORD) {
-  Serial.println();
-  Serial.println("======================Wifi-Mode-STA===========================");
-  byte tries = 15;
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-  Serial.print("Connecting to Wi-Fi");
-  while (--tries && WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(1000);
-  }
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Non Connecting to WiFi..");
-  }
-  server.begin();
-}
 
 //=======================================================================================================================
-void wifiModeAP() {
-  Serial.println();
-  Serial.println("======================Wifi-Mode-AP===========================");
 
-  Serial.print("Setting soft-AP configuration ... ");
-  //  "Задаем настройки программной точки доступа ... "
-  Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ? "Ready" : "Failed!");
-  //  "Готово" : "Задать настройки не удалось"
-
-  Serial.print("Setting soft-AP ... ");
-  //  "Настройка программной точки доступа ... "
-  Serial.println(WiFi.softAP(AP_SSID, AP_PASS) ? "Ready" : "Failed!");
-  //  "Готово" : "Настройка не удалась"
-
-  Serial.print("Soft-AP IP address = ");
-  //  "IP-адрес программной точки доступа = "
-  Serial.println(WiFi.softAPIP());
-
-  setCommands();
-
-  server.begin();
-}
 //=======================================================================================================================
 void setupWifiConfig() {
   server.stop();
+
+  splitString(WiFi.localIP().toString());
+
+  data.mac = WiFi.macAddress();
+  data.ssid = ssid;
+
+  connectToServer(700);
+  setCommands();
 
   Serial.println();
   Serial.print("Connected with IP: ");
@@ -53,14 +21,6 @@ void setupWifiConfig() {
   Serial.println("Use web browser and navigate to " + WiFi.localIP().toString());
   Serial.println("=================================================");
   Serial.println();
-
-  splitString(WiFi.localIP().toString());
-
-  data.mac = WiFi.macAddress();
-  data.ssid = ssid;
-
-  connectToServer(700);
-  setCommands();
 
   server.begin();  //Запускаем сервер
 }
