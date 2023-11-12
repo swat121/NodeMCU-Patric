@@ -1,7 +1,10 @@
 #include "ESP8266WebServer.h"
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
+
+// My classes
 #include "WiFiManager.h"
+#include "MemoryService.h"
 
 #include <uri/UriBraces.h>
 
@@ -34,7 +37,7 @@ Data data;
 
 
 //------------------------------------------------------------------------
-boolean status = true;
+boolean wifiModeStatus = true;
 String ssid;
 String pass;
 String WifiMode;
@@ -65,6 +68,7 @@ boolean flagIsConnectToServer = true;
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
 WiFiManager wifiManager(server);
+MemoryService memoryService;
 //------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
@@ -116,10 +120,13 @@ void setup() {
 
   //---------------------------------------------------------------------------------------------------
   
-  readFromEEPROM();
+  MemoryCredentials credentials = memoryService.readSsidAndPass();
+  ssid = credentials.ssid;
+  pass = credentials.password;
+  wifiModeStatus = credentials.status;
 
   //---------------------------------------------------------------------------------------------------
-  if (status) {
+  if (wifiModeStatus) {
     WifiMode = "STA";
     wifiManager.wifiModeSTA(ssid, pass);
   } else {
@@ -141,7 +148,7 @@ void loop() {
     digitalWrite(PIN_LED_Error, LOW);
     digitalWrite(PIN_LED_Good, LOW);
     ledBlink(3, 100);
-    changeWifiMode();
+    wifiManager.changeWifiMode('0');
   }
 
   if (WifiMode == "STA") {

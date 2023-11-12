@@ -31,24 +31,37 @@ void WiFiManager::wifiModeSTA(const String& ssid, const String& password) {
   server.begin();
 }
 
+//=======================================================================================================================
+
 void WiFiManager::wifiModeAP(const String& ssid, const String& password) {
   Serial.println();
   Serial.println("======================Wifi-Mode-AP===========================");
 
   Serial.print("Setting soft-AP configuration ... ");
-  //  "Задаем настройки программной точки доступа ... "
+
   Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ? "Ready" : "Failed!");
-  //  "Готово" : "Задать настройки не удалось"
 
   Serial.print("Setting soft-AP ... ");
   Serial.print(ssid);
+  Serial.print(" | ");
   Serial.print(password);
 
-  //  "Настройка программной точки доступа ... "
   Serial.println(WiFi.softAP(ssid, password) ? "Ready" : "Failed!");
-  //  "Готово" : "Настройка не удалась"
 
   Serial.print("Soft-AP IP address = ");
-  //  "IP-адрес программной точки доступа = "
+
   Serial.println(WiFi.softAPIP());
+}
+
+//=======================================================================================================================
+
+void WiFiManager::changeWifiMode(char mode) {
+  Serial.println("Change mode to " + mode);
+
+  memoryService.startEEPROMSession(1024);
+  memoryService.writeStatus(mode);
+  memoryService.endEEPROMSession();
+
+  Serial.println("Reset..");
+  ESP.restart();
 }
