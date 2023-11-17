@@ -59,11 +59,7 @@ void WiFiManager::changeWifiMode(const String& mode) {
   Serial.println("Change mode to " + mode);
 
   memoryService.startEEPROMSession(1024);
-  if (mode == "STA") {
-    memoryService.writeStatus(1);
-  } else if (mode == "AP") {
-    memoryService.writeStatus(0);
-  }
+  memoryService.writeStatus(mode == "STA" ? 1 : 0);
   memoryService.endEEPROMSession();
 
   Serial.println("Reset..");

@@ -148,11 +148,7 @@ void loop() {
     digitalWrite(PIN_LED_Error, LOW);
     digitalWrite(PIN_LED_Good, LOW);
     ledBlink(3, 100);
-    if (WifiMode == "STA") {
-      wifiManager.changeWifiMode("AP");
-    } else if (WifiMode == "AP") {
-      wifiManager.changeWifiMode("STA");
-    }
+    wifiManager.changeWifiMode(WifiMode == "STA" ? "AP" : "STA");
   }
 
   if (WifiMode == "STA") {
