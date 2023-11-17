@@ -55,11 +55,15 @@ void WiFiManager::wifiModeAP(const String& ssid, const String& password) {
 
 //=======================================================================================================================
 
-void WiFiManager::changeWifiMode(char mode) {
+void WiFiManager::changeWifiMode(const String& mode) {
   Serial.println("Change mode to " + mode);
 
   memoryService.startEEPROMSession(1024);
-  memoryService.writeStatus(mode);
+  if (mode == "STA") {
+    memoryService.writeStatus(1);
+  } else if (mode == "AP") {
+    memoryService.writeStatus(0);
+  }
   memoryService.endEEPROMSession();
 
   Serial.println("Reset..");

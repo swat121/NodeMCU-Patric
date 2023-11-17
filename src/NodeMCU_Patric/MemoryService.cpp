@@ -34,7 +34,7 @@ void MemoryService::writeSsidAndPass(const String& ssid, const String& password)
 
 //=======================================================================================================================
 
-void MemoryService::writeStatus(char status) {
+void MemoryService::writeStatus(uint8_t status) {
 
   EEPROM.write(0, status);
 

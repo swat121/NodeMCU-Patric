@@ -14,7 +14,7 @@ class MemoryService {
 public:
   MemoryService();
   void writeSsidAndPass(const String& ssid, const String& password);
-  void writeStatus(char status);
+  void writeStatus(uint8_t status);
   void startEEPROMSession(int size);
   void endEEPROMSession();
   MemoryCredentials readSsidAndPass();

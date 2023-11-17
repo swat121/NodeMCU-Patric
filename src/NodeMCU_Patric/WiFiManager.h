@@ -11,7 +11,7 @@ public:
     WiFiManager(ESP8266WebServer& server);
     void wifiModeSTA(const String& ssid, const String& password);
     void wifiModeAP(const String& ssid, const String& password);
-    void changeWifiMode(char mode);
+    void changeWifiMode(const String& mode);
 
 private:
     ESP8266WebServer& server;

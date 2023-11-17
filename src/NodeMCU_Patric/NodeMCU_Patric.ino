@@ -96,7 +96,7 @@ void setup() {
   switchModeButton.setDirection(NORM_OPEN);
 
   Serial.println();
-  Serial.println("Branch: develop");
+  Serial.println("Branch: feature");
 
   //------------------------------------------------------------------------
   sensors.begin();
@@ -119,7 +119,7 @@ void setup() {
   analogWrite(PIN_Power_Module, 0);
 
   //---------------------------------------------------------------------------------------------------
-  
+
   MemoryCredentials credentials = memoryService.readSsidAndPass();
   ssid = credentials.ssid;
   pass = credentials.password;
@@ -144,11 +144,15 @@ void loop() {
   switchModeButton.tick();
   if (switchModeButton.isHolded()) {
     Serial.println("Button is holding");
-    
+
     digitalWrite(PIN_LED_Error, LOW);
     digitalWrite(PIN_LED_Good, LOW);
     ledBlink(3, 100);
-    wifiManager.changeWifiMode('0');
+    if (WifiMode == "STA") {
+      wifiManager.changeWifiMode("AP");
+    } else if (WifiMode == "AP") {
+      wifiManager.changeWifiMode("STA");
+    }
   }
 
   if (WifiMode == "STA") {
