@@ -75,14 +75,14 @@ MemoryService memoryService;
 int ONE_WIRE_BUS = 0;  //D3
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
+
 unsigned long timerTemp;
-int ds18b20Count = 0;
 //------------------------------------------------------------------------
 
 //String parts[4];
 //------------------------------------------------------------------------
 
-#define bodySize 500
+#define bodySize 1024
 
 
 void setup() {
@@ -100,7 +100,6 @@ void setup() {
 
   //------------------------------------------------------------------------
   sensors.begin();
-  ds18b20Count = sensors.getDeviceCount();
   //------------------------------------------------------------------------
 
   pinMode(PIN_LED_Good, OUTPUT);
@@ -124,6 +123,7 @@ void setup() {
   ssid = credentials.ssid;
   pass = credentials.password;
   wifiModeStatus = credentials.status;
+
 
   //---------------------------------------------------------------------------------------------------
   if (wifiModeStatus) {

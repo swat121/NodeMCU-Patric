@@ -4,6 +4,7 @@ const String CLIENTS_PATH = "/api/v1/clients";
 
 void connectToServer(String parts[4], int timeout) {
   String whiteIp = parts[0] + "." + parts[1] + "." + parts[2] + ".";
+
   String ip, payload, response;
   bool isConnected = false;
   
@@ -85,3 +86,32 @@ String ping(const char* link, int timeout) {
   http.end();
   return response;
 }
+
+
+String createBoardConfigObject() {
+  StaticJsonDocument<bodySize> jsonDoc;
+  String boardPayload;
+  jsonDoc["name"] = data.name;
+
+  JsonObject setting = jsonDoc.createNestedObject("setting");
+
+  JsonArray sensors = setting.createNestedArray("sensors");
+  JsonObject temperature = sensors.createNestedObject();
+  temperature["moduleName"] = "temperature";
+  JsonArray temperatureData = temperature.createNestedArray("data");
+  JsonObject tempData1 = temperatureData.createNestedObject();
+  tempData1["moduleId"] = "1";
+  tempData1["pin"] = ONE_WIRE_BUS;
+
+  JsonArray switchers = setting.createNestedArray("switchers");
+  JsonObject relay = switchers.createNestedObject();
+  relay["moduleName"] = "relay";
+  JsonArray relayData = relay.createNestedArray("data");
+  JsonObject relayData1 = relayData.createNestedObject();
+  relayData1["moduleId"] = "1";
+  relayData1["pin"] = PIN_Relay1;
+
+  serializeJson(jsonDoc, boardPayload);
+  return boardPayload;
+}
+

@@ -5,13 +5,10 @@ void setCommands() {
   Serial.println(WifiMode);
   if (WifiMode == "STA") {
     server.on("/api/v1/help", HTTP_GET, getHelp);
-    server.on(UriBraces("/api/v1/relays/{}"), HTTP_PUT, relayHandle);
-    server.on("/api/v1/power-module", HTTP_PUT, putPowerModule);
-    server.on(UriBraces("/api/v1/temperature/{}"), HTTP_GET, getDataTemp);
-    server.on("/api/v1/light", HTTP_GET, getLight);
-    server.on("/api/v1/message", HTTP_PUT, putMessage);
+    server.on(UriBraces("/api/v1/switchers/{}/{}"), HTTP_PUT, switchHandler);
+    server.on(UriBraces("/api/v1/sensors/{}/{}"), HTTP_GET, sensorHandler);
     server.on("/api/v1/status", HTTP_GET, getStatus);
-    server.on("/api/v1/configuration", HTTP_GET, getConfig);
+    server.on("/api/v1/board-config", HTTP_GET, getConfig);
   }
   if (WifiMode == "AP") {
     server.on("/", HTTP_GET, handleMainHtmlPage);
@@ -22,30 +19,16 @@ void setCommands() {
 //-----------------------------------------------------------------------------------------------------
 
 void getConfig() {
-  StaticJsonDocument<bodySize> doc;
-  JsonObject config = doc.createNestedObject("config");
+  String doc = createBoardConfigObject();
 
-  JsonObject sensor = config.createNestedObject("sensor");
-  JsonArray temp = sensor.createNestedArray("temp");
-  temp.add(ONE_WIRE_BUS);
-
-
-  JsonObject switcher = config.createNestedObject("switcher");
-  JsonArray relay = switcher.createNestedArray("relay");
-  JsonArray powerModule = switcher.createNestedArray("power-module");
-  relay.add(PIN_Relay1);
-  relay.add(PIN_Relay2);
-  relay.add(PIN_Relay3);
-  powerModule.add(PIN_Power_Module);
- 
-  sendMessage(doc, 200);
+  //sendMessage(doc, 200);
   ledBlink(1, 100);
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 void getHelp() {
-  StaticJsonDocument<bodySize> doc;;
+  StaticJsonDocument<bodySize> doc;
   JsonObject help = doc.createNestedObject("help");
   JsonObject status = help.createNestedObject("status");
 
@@ -70,7 +53,7 @@ void getHelp() {
   JsonObject relay = switcher.createNestedObject("relay");
 
   relay["method"] = "PUT";
-  relay["endpoint"] = "/api/v1/relays/{id}";
+  relay["endpoint"] = "/api/v1/switchers/relay/{}";
 
   JsonObject powerModule = switcher.createNestedObject("power-module");
 
@@ -95,13 +78,47 @@ void getStatus() {
 
 //-----------------------------------------------------------------------------------------------------
 
-void relayHandle() {
-  int idParam = server.pathArg(0).toInt();
-  switch (idParam) {
-    case 1: relay1(); break;
-    case 2: relay2(); break;
-    case 3: relay3(); break;
-    default: sendMessage("Error", "Relay module not found!", 404);
+void sensorHandler() {
+  String moduleNameParam = server.pathArg(0);
+  int idParam = server.pathArg(1).toInt();
+
+  Serial.println(moduleNameParam);
+  Serial.println(idParam);
+
+  if (moduleNameParam.equals("temperature")) {
+    sensors.requestTemperatures();
+
+    float responce = sensors.getTempCByIndex(idParam);
+
+    if (responce == -127.00) {
+      sendMessage("temp", "Temperature device not found!", 404);
+    } else {
+      sendMessage("temp", String(responce));
+    }
+  } else {
+    sendMessage("Error", "Sensor not found!", 404);
+  }
+
+  ledBlink(1, 100);
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void switchHandler() {
+  String moduleNameParam = server.pathArg(0);
+  int idParam = server.pathArg(1).toInt();
+
+  if (moduleNameParam.equals("relay")) {
+    switch (idParam) {
+      case 1: relay1(); break;
+      case 2: relay2(); break;
+      case 3: relay3(); break;
+      default: sendMessage("Error", "Relay module not found!", 404);
+    }
+  } else if (moduleNameParam.equals("power-module")) {
+    yankPowerModule();
+  } else {
+    sendMessage("Error", "Module not found!", 404);
   }
 }
 
@@ -131,7 +148,7 @@ void relay3() {
 
 //-----------------------------------------------------------------------------------------------------
 
-void putPowerModule() {
+void yankPowerModule() {
   PowerStatus = !PowerStatus;
   if (PowerStatus == true) {
     for (int i = 0; i < 255; i++) {
@@ -146,37 +163,10 @@ void putPowerModule() {
       delay(10);
     }
   }
-  sendMessage("PowerStatus", String(digitalRead(PIN_Power_Module)));
+  sendMessage("PowerModuleStatus", String(digitalRead(PIN_Power_Module)));
   ledBlink(1, 100);
 }
 
-//-----------------------------------------------------------------------------------------------------
-
-void getDataTemp() {
-  int id = server.pathArg(0).toInt();
-  float responce = getTemperatureByIndex(id);
-
-  if (responce == -127.00) {
-    sendMessage("temp", "Temperature device not found!", 404);
-  } else {
-    sendMessage("temp", String(responce));
-  }
-  ledBlink(1, 100);
-}
-
-//-----------------------------------------------------------------------------------------------------
-
-void getLight() {
-  sendMessage("backlight", "not yet");
-  ledBlink(1, 100);
-}
-
-//-----------------------------------------------------------------------------------------------------
-
-void putMessage() {
-  sendMessage("message", "not yet");
-  ledBlink(1, 100);
-}
 //-----------------------------------------------------------------------------------------------------
 
 void sendMessage(String key, String value) {
