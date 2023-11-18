@@ -17,7 +17,7 @@
 #include "GyverButton.h"
 
 // Button variables
-#define BTN_PIN 5
+#define BTN_PIN 5 // D0
 GButton switchModeButton(BTN_PIN);
 
 //------------------------------------------------------------------------
@@ -148,11 +148,9 @@ void handleSTAConnection() {
   new (&connectionService) ConnectionService(clientData, boardData);
 
   if (WiFi.status() == WL_CONNECTED) {
-    String ip_parts[4];
     data.ip = WiFi.localIP().toString();
     data.mac = WiFi.macAddress();
-    splitString(data.ip, ip_parts);
-    connectionService.connectToServer(ip_parts, 700);
+    connectionService.connectToServer(data.ip, 700);
     ledBlink(3, 100);
   }
 }
