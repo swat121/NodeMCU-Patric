@@ -1,10 +1,11 @@
 #include "ESP8266WebServer.h"
 #include <ESP8266HTTPClient.h>
-#include <ArduinoJson.h>
 
 // My classes
 #include "WiFiManager.h"
 #include "MemoryService.h"
+#include "ConnectionService.h"
+#include "Data.h"
 
 #include <uri/UriBraces.h>
 
@@ -20,12 +21,6 @@
 GButton switchModeButton(BTN_PIN);
 
 //------------------------------------------------------------------------
-struct Data {
-  String name = "patric";
-  String ip;
-  String mac;
-  String ssid;
-};
 
 Data data;
 
@@ -67,8 +62,11 @@ boolean flagIsConnectToServer = true;
 
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
+
 WiFiManager wifiManager(server);
 MemoryService memoryService;
+ConnectionService connectionService;
+
 //------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
@@ -79,8 +77,6 @@ DallasTemperature sensors(&oneWire);
 unsigned long timerTemp;
 //------------------------------------------------------------------------
 
-//String parts[4];
-//------------------------------------------------------------------------
 
 #define bodySize 1024
 
@@ -126,9 +122,16 @@ void setup() {
 
 
   //---------------------------------------------------------------------------------------------------
+
+  String boardData = createBoardDataJson();
+  String clientData = createClientDataJson();
+
+  //---------------------------------------------------------------------------------------------------
+
   if (wifiModeStatus) {
     WifiMode = "STA";
     wifiManager.wifiModeSTA(ssid, pass);
+    new (&connectionService) ConnectionService(clientData, boardData);
   } else {
     WifiMode = "AP";
     wifiManager.wifiModeAP(AP_SSID, AP_PASS);
@@ -187,4 +190,44 @@ void ledDisconnect() {
     digitalWrite(PIN_LED_Error, stat);
     stat = !stat;
   }
+}
+
+String createBoardDataJson() {
+  // Before change doc, you mus change doc size (check optimize doc size here https://arduinojson.org/v6/assistant/#/step1)
+  StaticJsonDocument<512> jsonDoc;
+  String payload;
+  jsonDoc["name"] = data.name;
+
+  JsonObject setting = jsonDoc.createNestedObject("setting");
+
+  JsonArray sensors = setting.createNestedArray("sensors");
+  JsonObject temperature = sensors.createNestedObject();
+  temperature["moduleName"] = "temperature";
+  JsonArray temperatureData = temperature.createNestedArray("data");
+  JsonObject tempData1 = temperatureData.createNestedObject();
+  tempData1["moduleId"] = "1";
+  tempData1["pin"] = ONE_WIRE_BUS;
+
+  JsonArray switchers = setting.createNestedArray("switchers");
+  JsonObject relay = switchers.createNestedObject();
+  relay["moduleName"] = "relay";
+  JsonArray relayData = relay.createNestedArray("data");
+  JsonObject relayData1 = relayData.createNestedObject();
+  relayData1["moduleId"] = "1";
+  relayData1["pin"] = PIN_Relay1;
+
+  serializeJson(jsonDoc, payload);
+  return payload;
+}
+
+String createClientDataJson() {
+  // Before change doc, you mus change doc size (check optimize doc size here https://arduinojson.org/v6/assistant/#/step1)
+  StaticJsonDocument<128> doc;
+  String payload;
+  doc["name"] = data.name;
+  doc["ip"] = WiFi.localIP().toString();
+  doc["mac"] = data.mac;
+  doc["ssid"] = data.ssid;
+  serializeJson(doc, payload);
+  return payload;
 }

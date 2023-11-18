@@ -19,7 +19,7 @@ void setCommands() {
 //-----------------------------------------------------------------------------------------------------
 
 void getConfig() {
-  String doc = createBoardConfigObject();
+  String doc = createBoardDataJson();
 
   //sendMessage(doc, 200);
   ledBlink(1, 100);
