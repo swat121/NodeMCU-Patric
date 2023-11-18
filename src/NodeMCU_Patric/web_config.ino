@@ -70,7 +70,14 @@ void handleFormSubmit() {
     Serial.println(arg2);
 
     server.send(200, "text/plain", "OK");
-    writeToEEPROM(arg1, arg2);
+
+
+    memoryService.startEEPROMSession(1024);
+    memoryService.writeStatus('1');
+    memoryService.writeSsidAndPass(arg1, arg2);
+    memoryService.endEEPROMSession();
+
+  
     delay(3000);
     Serial.println("Reset..");
     ESP.restart();

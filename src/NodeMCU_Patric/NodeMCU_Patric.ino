@@ -2,6 +2,10 @@
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
 
+// My classes
+#include "WiFiManager.h"
+#include "MemoryService.h"
+
 #include <uri/UriBraces.h>
 
 #include <OneWire.h>
@@ -30,12 +34,10 @@ Data data;
 #define AP_PASS "12345678"
 
 //------------------------------------------------------------------------
-IPAddress local_IP(192, 168, 4, 22);
-IPAddress gateway(192, 168, 4, 9);
-IPAddress subnet(255, 255, 255, 0);
+
 
 //------------------------------------------------------------------------
-boolean status = true;
+boolean wifiModeStatus = true;
 String ssid;
 String pass;
 String WifiMode;
@@ -65,6 +67,8 @@ boolean flagIsConnectToServer = true;
 
 //------------------------------------------------------------------------
 ESP8266WebServer server(80);
+WiFiManager wifiManager(server);
+MemoryService memoryService;
 //------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
@@ -75,7 +79,7 @@ DallasTemperature sensors(&oneWire);
 unsigned long timerTemp;
 //------------------------------------------------------------------------
 
-String parts[4];
+//String parts[4];
 //------------------------------------------------------------------------
 
 #define bodySize 1024
@@ -92,7 +96,7 @@ void setup() {
   switchModeButton.setDirection(NORM_OPEN);
 
   Serial.println();
-  Serial.println("Branch: develop");
+  Serial.println("Branch: feature");
 
   //------------------------------------------------------------------------
   sensors.begin();
@@ -115,15 +119,22 @@ void setup() {
 
   //---------------------------------------------------------------------------------------------------
 
-  readFromEEPROM();
+  MemoryCredentials credentials = memoryService.readSsidAndPass();
+  ssid = credentials.ssid;
+  pass = credentials.password;
+  wifiModeStatus = credentials.status;
+
 
   //---------------------------------------------------------------------------------------------------
-  if (status) {
+  if (wifiModeStatus) {
     WifiMode = "STA";
-    wifiModeSTA(ssid, pass);
+    wifiManager.wifiModeSTA(ssid, pass);
   } else {
     WifiMode = "AP";
-    wifiModeAP();
+    wifiManager.wifiModeAP(AP_SSID, AP_PASS);
+    setCommands();
+
+    server.begin();
   }
   //-----------------------------------------------------------------------------------------------------
 }
@@ -137,7 +148,7 @@ void loop() {
     digitalWrite(PIN_LED_Error, LOW);
     digitalWrite(PIN_LED_Good, LOW);
     ledBlink(3, 100);
-    changeWifiMode();
+    wifiManager.changeWifiMode(WifiMode == "STA" ? "AP" : "STA");
   }
 
   if (WifiMode == "STA") {
