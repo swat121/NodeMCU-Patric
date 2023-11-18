@@ -5,7 +5,7 @@
 #include "WiFiManager.h"
 #include "MemoryService.h"
 #include "ConnectionService.h"
-#include "Data.h"
+#include "ClientData.h"
 
 #include <uri/UriBraces.h>
 
@@ -22,7 +22,7 @@ GButton switchModeButton(BTN_PIN);
 
 //------------------------------------------------------------------------
 
-Data data;
+ClientData data;
 
 //------------------------------------------------------------------------
 #define AP_SSID data.name
@@ -32,10 +32,12 @@ Data data;
 
 
 //------------------------------------------------------------------------
-boolean wifiModeStatus = true;
-String ssid;
+
 String pass;
 String WifiMode;
+
+const String WIFI_MODE_STA = "STA";
+const String WIFI_MODE_AP = "AP";
 //------------------------------------------------------------------------
 
 unsigned long timer;
@@ -116,30 +118,48 @@ void setup() {
   //---------------------------------------------------------------------------------------------------
 
   MemoryCredentials credentials = memoryService.readSsidAndPass();
-  ssid = credentials.ssid;
+  data.ssid = credentials.ssid;
   pass = credentials.password;
-  wifiModeStatus = credentials.status;
-
+  boolean wifiModeStatus = credentials.status;
 
   //---------------------------------------------------------------------------------------------------
 
+  setupWifiMode(wifiModeStatus);
+  //-----------------------------------------------------------------------------------------------------
+}
+
+void setupWifiMode(boolean& status) {
+  if (status) {
+    handleSTAConnection();
+  } else {
+    handleAPConnection();
+  }
+
+  setCommands();
+  server.begin();
+}
+
+void handleSTAConnection() {
   String boardData = createBoardDataJson();
   String clientData = createClientDataJson();
 
-  //---------------------------------------------------------------------------------------------------
+  WifiMode = WIFI_MODE_STA;
+  wifiManager.wifiModeSTA(data.ssid, pass);
+  new (&connectionService) ConnectionService(clientData, boardData);
 
-  if (wifiModeStatus) {
-    WifiMode = "STA";
-    wifiManager.wifiModeSTA(ssid, pass);
-    new (&connectionService) ConnectionService(clientData, boardData);
-  } else {
-    WifiMode = "AP";
-    wifiManager.wifiModeAP(AP_SSID, AP_PASS);
-    setCommands();
-
-    server.begin();
+  if (WiFi.status() == WL_CONNECTED) {
+    String ip_parts[4];
+    data.ip = WiFi.localIP().toString();
+    data.mac = WiFi.macAddress();
+    splitString(data.ip, ip_parts);
+    connectionService.connectToServer(ip_parts, 700);
+    ledBlink(3, 100);
   }
-  //-----------------------------------------------------------------------------------------------------
+}
+
+void handleAPConnection() {
+  WifiMode = WIFI_MODE_AP;
+  wifiManager.wifiModeAP(AP_SSID, AP_PASS);
 }
 
 //-----------------------------------LOOP--------------------------------------------------------------
@@ -151,22 +171,18 @@ void loop() {
     digitalWrite(PIN_LED_Error, LOW);
     digitalWrite(PIN_LED_Good, LOW);
     ledBlink(3, 100);
-    wifiManager.changeWifiMode(WifiMode == "STA" ? "AP" : "STA");
+    wifiManager.changeWifiMode(WifiMode == WIFI_MODE_STA ? WIFI_MODE_AP : WIFI_MODE_STA);
   }
 
-  if (WifiMode == "STA") {
-    if (WiFi.status() != WL_CONNECTED) {
-      ledDisconnect();
-      return;
-    }
+  if (WifiMode == WIFI_MODE_STA && WiFi.status() != WL_CONNECTED) {
+    ledDisconnect();
+    return;
+  }
+
+  if (WifiMode == WIFI_MODE_STA) {
     digitalWrite(PIN_LED_Error, LOW);
-
-    if (flagIsConnectToServer) {
-      setupWifiConfig();
-      ledBlink(3, 100);
-      flagIsConnectToServer = false;
-    }
   }
+
   server.handleClient();
 }
 
@@ -194,12 +210,13 @@ void ledDisconnect() {
 
 String createBoardDataJson() {
   // Before change doc, you mus change doc size (check optimize doc size here https://arduinojson.org/v6/assistant/#/step1)
-  StaticJsonDocument<512> jsonDoc;
+  StaticJsonDocument<512> doc;
   String payload;
-  jsonDoc["name"] = data.name;
+  doc["name"] = data.name;
 
-  JsonObject setting = jsonDoc.createNestedObject("setting");
+  JsonObject setting = doc.createNestedObject("setting");
 
+  // sensors
   JsonArray sensors = setting.createNestedArray("sensors");
   JsonObject temperature = sensors.createNestedObject();
   temperature["moduleName"] = "temperature";
@@ -208,6 +225,7 @@ String createBoardDataJson() {
   tempData1["moduleId"] = "1";
   tempData1["pin"] = ONE_WIRE_BUS;
 
+  // switchers
   JsonArray switchers = setting.createNestedArray("switchers");
   JsonObject relay = switchers.createNestedObject();
   relay["moduleName"] = "relay";
@@ -216,18 +234,20 @@ String createBoardDataJson() {
   relayData1["moduleId"] = "1";
   relayData1["pin"] = PIN_Relay1;
 
-  serializeJson(jsonDoc, payload);
+  serializeJson(doc, payload);
   return payload;
 }
 
 String createClientDataJson() {
   // Before change doc, you mus change doc size (check optimize doc size here https://arduinojson.org/v6/assistant/#/step1)
   StaticJsonDocument<128> doc;
-  String payload;
+
   doc["name"] = data.name;
-  doc["ip"] = WiFi.localIP().toString();
+  doc["ip"] = data.ip;
   doc["mac"] = data.mac;
   doc["ssid"] = data.ssid;
+
+  String payload;
   serializeJson(doc, payload);
   return payload;
 }

@@ -3,14 +3,14 @@ void setCommands() {
   Serial.println();
   Serial.println("==================SET-COMMAND===============");
   Serial.println(WifiMode);
-  if (WifiMode == "STA") {
+  if (WifiMode == WIFI_MODE_STA) {
     server.on("/api/v1/help", HTTP_GET, getHelp);
     server.on(UriBraces("/api/v1/switchers/{}/{}"), HTTP_PUT, switchHandler);
     server.on(UriBraces("/api/v1/sensors/{}/{}"), HTTP_GET, sensorHandler);
     server.on("/api/v1/status", HTTP_GET, getStatus);
     server.on("/api/v1/board-config", HTTP_GET, getConfig);
   }
-  if (WifiMode == "AP") {
+  if (WifiMode == WIFI_MODE_AP) {
     server.on("/", HTTP_GET, handleMainHtmlPage);
     server.on("/submit", HTTP_POST, handleFormSubmit);
   }

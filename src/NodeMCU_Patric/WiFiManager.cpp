@@ -7,7 +7,6 @@ IPAddress subnet(255, 255, 255, 0);
 
 WiFiManager::WiFiManager(ESP8266WebServer& server)
   : server(server) {
-  // Конструктор
 }
 
 void WiFiManager::wifiModeSTA(const String& ssid, const String& password) {
@@ -28,7 +27,6 @@ void WiFiManager::wifiModeSTA(const String& ssid, const String& password) {
   } else {
     Serial.println("Connected to WiFi..");
   }
-  server.begin();
 }
 
 //=======================================================================================================================

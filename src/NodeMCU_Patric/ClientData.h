@@ -1,9 +1,9 @@
-#ifndef DATA_H
-#define DATA_H
+#ifndef CLIENT_DATA_H
+#define CLIENT_DATA_H
 
 #include <Arduino.h>
 
-struct Data {
+struct ClientData {
     String name = "patric";
     String ip;
     String mac;
