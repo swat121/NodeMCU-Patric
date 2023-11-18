@@ -1,27 +1,32 @@
 const int PORT = 8080;
 const String PING_PATH = "/api/v1/ping";
 const String CLIENTS_PATH = "/api/v1/clients";
+const String BOARD_PATH = "/api/v1/board-config";
+
+String createUrl(const String& baseIp, int deviceNumber, const String& path) {
+  return "http://" + baseIp + String(deviceNumber) + ":" + String(PORT) + path;
+}
 
 void connectToServer(String parts[4], int timeout) {
-  String whiteIp = parts[0] + "." + parts[1] + "." + parts[2] + ".";
-
-  String ip, payload, response;
+  String baseIp = parts[0] + "." + parts[1] + "." + parts[2] + ".";
   bool isConnected = false;
-  
+
   for (int i = 1; i < 255; i++) {
-    String host = "http://" + whiteIp + String(i) + ":" + String(PORT) + PING_PATH;
-    Serial.println(host);
+    String pingUrl = createUrl(baseIp, i, PING_PATH);
+    Serial.println(pingUrl);
 
-    if (ping(host.c_str(), timeout) == "pong") {
+    if (ping(pingUrl.c_str(), timeout) == "pong") {
       isConnected = true;
-      ip = whiteIp + String(i);
-      Serial.print("Karen host is: "); Serial.println(ip);
+      String serverBaseUrl = "http://" + baseIp + String(i) + ":" + String(PORT);
 
-      String karenHost = "http://" + whiteIp + String(i) + ":" + String(PORT) + CLIENTS_PATH;
-      Serial.println(karenHost);
+      String clientDataResponse = sendClientData(createUrl(baseIp, i, CLIENTS_PATH));
+      Serial.println("POST request to " + serverBaseUrl + CLIENTS_PATH);
+      Serial.println(clientDataResponse);
 
-      response = sendClientData(karenHost);
-      Serial.println("POST request to Karen"); Serial.println(response);
+      String boardDataResponse = sendBoardData(createUrl(baseIp, i, BOARD_PATH));
+      Serial.println("POST request to " + serverBaseUrl + BOARD_PATH);
+      Serial.println(boardDataResponse);
+
       break;
     }
   }
@@ -33,13 +38,7 @@ void connectToServer(String parts[4], int timeout) {
 }
 
 String sendClientData(const String& host) {
-  StaticJsonDocument<200> doc;
-  String payload;
-  doc["name"] = data.name;
-  doc["ip"] = WiFi.localIP().toString();
-  doc["mac"] = data.mac;
-  doc["ssid"] = data.ssid;
-  serializeJson(doc, payload);
+  String payload = createClientDataJson();
   return POSTRequest(host.c_str(), "application/json", payload);
 }
 
@@ -76,21 +75,31 @@ String ping(const char* link, int timeout) {
   String response;
   HTTPClient http;
   WiFiClient wifiClient;
+
   http.begin(wifiClient, link);
   http.setTimeout(timeout);
+
   int httpCode = http.GET();
+
   if (httpCode == 200) {
     response = http.getString();
     Serial.println(response);
   }
+
   http.end();
   return response;
 }
 
 
-String createBoardConfigObject() {
-  StaticJsonDocument<bodySize> jsonDoc;
-  String boardPayload;
+String sendBoardData(const String& host) {
+  String payload = createBoardDataJson();
+  return POSTRequest(host.c_str(), "application/json", payload);
+}
+
+String createBoardDataJson() {
+  // Before change doc, you mus change doc size (check optimize doc size here https://arduinojson.org/v6/assistant/#/step1)
+  StaticJsonDocument<512> jsonDoc;
+  String payload;
   jsonDoc["name"] = data.name;
 
   JsonObject setting = jsonDoc.createNestedObject("setting");
@@ -111,7 +120,18 @@ String createBoardConfigObject() {
   relayData1["moduleId"] = "1";
   relayData1["pin"] = PIN_Relay1;
 
-  serializeJson(jsonDoc, boardPayload);
-  return boardPayload;
+  serializeJson(jsonDoc, payload);
+  return payload;
 }
 
+String createClientDataJson() {
+  // Before change doc, you mus change doc size (check optimize doc size here https://arduinojson.org/v6/assistant/#/step1)
+  StaticJsonDocument<128> doc;
+  String payload;
+  doc["name"] = data.name;
+  doc["ip"] = WiFi.localIP().toString();
+  doc["mac"] = data.mac;
+  doc["ssid"] = data.ssid;
+  serializeJson(doc, payload);
+  return payload;
+}
