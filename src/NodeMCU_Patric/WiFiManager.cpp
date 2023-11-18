@@ -44,7 +44,7 @@ void WiFiManager::wifiModeAP(const String& ssid, const String& password) {
   Serial.print("Setting soft-AP ... ");
   Serial.print(ssid);
   Serial.print(" | ");
-  Serial.print(password);
+  Serial.println(password);
 
   Serial.println(WiFi.softAP(ssid, password) ? "Ready" : "Failed!");
 

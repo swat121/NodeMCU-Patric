@@ -1,66 +1,68 @@
-void connectToServer(int timeout) {
+const int PORT = 8080;
+const String PING_PATH = "/api/v1/ping";
+const String CLIENTS_PATH = "/api/v1/clients";
+
+void connectToServer(String parts[4], int timeout) {
   String whiteIp = parts[0] + "." + parts[1] + "." + parts[2] + ".";
-  String payload;
-  String ip;
-  char host[100];
-  char karenHost[100];
-  int i;
-  for (i = 1; i < 255; i++) {
-    sprintf(host, "http://%s%d:%d/api/v1%s", whiteIp.c_str(), i, 8080, "/ping");
+  String ip, payload, response;
+  bool isConnected = false;
+  
+  for (int i = 1; i < 255; i++) {
+    String host = "http://" + whiteIp + String(i) + ":" + String(PORT) + PING_PATH;
     Serial.println(host);
-    if (ping(host, timeout) == "pong") {
 
-      Serial.print("Karen host is: ");
-      ip = whiteIp + i;
-      Serial.println(ip);
+    if (ping(host.c_str(), timeout) == "pong") {
+      isConnected = true;
+      ip = whiteIp + String(i);
+      Serial.print("Karen host is: "); Serial.println(ip);
 
-      sprintf(karenHost, "http://%s%d:%d/api/v1%s", whiteIp.c_str(), i, 8080, "/clients");
+      String karenHost = "http://" + whiteIp + String(i) + ":" + String(PORT) + CLIENTS_PATH;
       Serial.println(karenHost);
 
-      StaticJsonDocument<200> doc;
-      data.ip = WiFi.localIP().toString();
-      doc["name"] = data.name;
-      doc["ip"] = data.ip;
-      doc["mac"] = data.mac;
-      doc["ssid"] = data.ssid;
-      serializeJson(doc, payload);
-      String response = POSTRequest(karenHost, "application/json", payload);
-
-
-      Serial.println("POST request to Karen");
-      Serial.println(response);
-
+      response = sendClientData(karenHost);
+      Serial.println("POST request to Karen"); Serial.println(response);
       break;
     }
   }
-  if (i >= 255) {
+
+  if (!isConnected) {
     Serial.println("Reset..");
     ESP.restart();
   }
 }
 
-String POSTRequest(char link[], String contentType, String payload) {
-  String response = "";
+String sendClientData(const String& host) {
+  StaticJsonDocument<200> doc;
+  String payload;
+  doc["name"] = data.name;
+  doc["ip"] = WiFi.localIP().toString();
+  doc["mac"] = data.mac;
+  doc["ssid"] = data.ssid;
+  serializeJson(doc, payload);
+  return POSTRequest(host.c_str(), "application/json", payload);
+}
+
+
+String POSTRequest(const String& link, const String& contentType, const String& payload) {
   HTTPClient http;
   WiFiClient wifiClient;
   http.begin(wifiClient, link);
   http.addHeader("Content-Type", contentType);
+
   int httpCode = http.POST(payload);
-  Serial.println(httpCode);
+  String response = (httpCode == 200) ? http.getString() : "Error from server: " + http.getString();
+
   if (httpCode == 200) {
-    response = http.getString();
     ledBlink(5, 300);
-  } else {
-    response = "Error from server: " + http.getString();
   }
+
   http.end();
   return response;
 }
 
-void splitString(String ip_address) {
 
+void splitString(String ip_address, String parts[4]) {
   int part_index = 0;
-
   while (ip_address.indexOf('.') >= 0) {
     int dot_pos = ip_address.indexOf('.');
     parts[part_index++] = ip_address.substring(0, dot_pos);
@@ -69,8 +71,8 @@ void splitString(String ip_address) {
   parts[part_index] = ip_address;
 }
 
-String ping(char link[], int timeout) {
-  String response = "";
+String ping(const char* link, int timeout) {
+  String response;
   HTTPClient http;
   WiFiClient wifiClient;
   http.begin(wifiClient, link);

@@ -2,12 +2,13 @@
 void setupWifiConfig() {
   server.stop();
 
-  splitString(WiFi.localIP().toString());
+  String ip_parts[4];
+  splitString(WiFi.localIP().toString(), ip_parts);
 
   data.mac = WiFi.macAddress();
   data.ssid = ssid;
 
-  connectToServer(700);
+  connectToServer(ip_parts, 700);
   setCommands();
 
   Serial.println();
@@ -21,4 +22,3 @@ void setupWifiConfig() {
 
   server.begin();
 }
-
