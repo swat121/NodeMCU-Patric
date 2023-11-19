@@ -1,5 +1,4 @@
 #include "ESP8266WebServer.h"
-#include <ESP8266HTTPClient.h>
 
 // My classes
 #include "WiFiManager.h"
@@ -11,8 +10,6 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
-
-#include <EEPROM.h>
 
 #include "GyverButton.h"
 
@@ -30,39 +27,32 @@ ClientData data;
 
 //------------------------------------------------------------------------
 
-
-//------------------------------------------------------------------------
-
 String pass;
 String WifiMode;
 
-const String WIFI_MODE_STA = "STA";
-const String WIFI_MODE_AP = "AP";
+#define WIFI_MODE_STA "STA"
+#define WIFI_MODE_AP "AP"
 //------------------------------------------------------------------------
 
 unsigned long timer;
-boolean stat = true;
+boolean disconnectLedStatus = true;
 #define PIN_LED_Good 2    //D4
 #define PIN_LED_Error 14  //D5
 //------------------------------------------------------------------------
-int PIN_Relay1 = 12;  //D6
+#define PIN_Relay1 12  //D6
 boolean Relay1 = false;
 
-int PIN_Relay2 = 13;  //D7
+#define PIN_Relay2 13  //D7
 boolean Relay2 = false;
 
-int PIN_Relay3 = 15;  //D8
+#define PIN_Relay3 15  //D8
 boolean Relay3 = false;
 
-int PIN_Power_Module = 4;  //D2
+#define PIN_Power_Module 4  //D2
 boolean PowerStatus = false;
 
 //------------------------------------------------------------------------
 
-boolean flagForCheckConnect = false;
-boolean flagIsConnectToServer = true;
-
-//------------------------------------------------------------------------
 ESP8266WebServer server(80);
 
 WiFiManager wifiManager(server);
@@ -70,17 +60,12 @@ MemoryService memoryService;
 ConnectionService connectionService;
 
 //------------------------------------------------------------------------
-
-//------------------------------------------------------------------------
-int ONE_WIRE_BUS = 0;  //D3
+#define ONE_WIRE_BUS 0  //D3
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
 unsigned long timerTemp;
 //------------------------------------------------------------------------
-
-
-#define bodySize 1024
 
 
 void setup() {
@@ -201,8 +186,8 @@ void ledDisconnect() {
   if (millis() - timer > 1000) {
     Serial.println("Wifi not connected");
     timer = millis();
-    digitalWrite(PIN_LED_Error, stat);
-    stat = !stat;
+    digitalWrite(PIN_LED_Error, disconnectLedStatus);
+    disconnectLedStatus = !disconnectLedStatus;
   }
 }
 

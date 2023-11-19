@@ -28,7 +28,7 @@ void getConfig() {
 //-----------------------------------------------------------------------------------------------------
 
 void getHelp() {
-  StaticJsonDocument<bodySize> doc;
+  StaticJsonDocument<1024> doc;
   JsonObject help = doc.createNestedObject("help");
   JsonObject status = help.createNestedObject("status");
 
@@ -67,7 +67,7 @@ void getHelp() {
 //-----------------------------------------------------------------------------------------------------
 
 void getStatus() {
-  StaticJsonDocument<bodySize> doc;
+  StaticJsonDocument<128> doc;
   doc["relay1"] = String(digitalRead(PIN_Relay1));
   doc["relay2"] = String(digitalRead(PIN_Relay2));
   doc["relay3"] = String(digitalRead(PIN_Relay3));
@@ -187,7 +187,7 @@ void sendMessage(String key, String value, int statusCode) {
   server.send(statusCode, "application/json", s);
 }
 
-void sendMessage(StaticJsonDocument<bodySize> doc, int statusCode) {
+void sendMessage(StaticJsonDocument<128> doc, int statusCode) {
   String s;
   doc["name"] = data.name;
   serializeJson(doc, s);

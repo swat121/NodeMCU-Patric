@@ -29,5 +29,4 @@ private:
   void splitString(String ip_address, String parts[4]);
 };
 
-
 #endif
