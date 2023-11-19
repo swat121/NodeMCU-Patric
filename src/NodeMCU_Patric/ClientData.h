@@ -8,6 +8,8 @@ struct ClientData {
     String ip;
     String mac;
     String ssid;
+    String apPass = "12345678";
+    String staPass;
 };
 
 #endif

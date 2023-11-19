@@ -23,11 +23,10 @@ ClientData data;
 
 //------------------------------------------------------------------------
 #define AP_SSID data.name
-#define AP_PASS "12345678"
+#define AP_PASS data.apPass
 
 //------------------------------------------------------------------------
 
-String pass;
 String WifiMode;
 
 #define WIFI_MODE_STA "STA"
@@ -104,7 +103,7 @@ void setup() {
 
   MemoryCredentials credentials = memoryService.readSsidAndPass();
   data.ssid = credentials.ssid;
-  pass = credentials.password;
+  data.staPass = credentials.password;
   boolean wifiModeStatus = credentials.status;
 
   //---------------------------------------------------------------------------------------------------
@@ -129,7 +128,7 @@ void handleSTAConnection() {
   String clientData = createClientDataJson();
 
   WifiMode = WIFI_MODE_STA;
-  wifiManager.wifiModeSTA(data.ssid, pass);
+  wifiManager.wifiModeSTA(data.ssid, data.staPass);
   new (&connectionService) ConnectionService(clientData, boardData);
 
   if (WiFi.status() == WL_CONNECTED) {
