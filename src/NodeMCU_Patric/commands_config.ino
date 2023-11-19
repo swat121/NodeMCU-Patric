@@ -4,9 +4,9 @@ void setCommands() {
   Serial.println("==================SET-COMMAND===============");
   Serial.println(WifiMode);
   if (WifiMode == WIFI_MODE_STA) {
-    server.on("/api/v1/help", HTTP_GET, getHelp);
     server.on(UriBraces("/api/v1/switchers/{}/{}"), HTTP_PUT, switchHandler);
     server.on(UriBraces("/api/v1/sensors/{}/{}"), HTTP_GET, sensorHandler);
+    server.on(UriBraces("/api/v1/trackers/{}/{}"), HTTP_GET, sensorHandler);
     server.on("/api/v1/status", HTTP_GET, getStatus);
     server.on("/api/v1/board-config", HTTP_GET, getConfig);
   }
@@ -19,55 +19,16 @@ void setCommands() {
 //-----------------------------------------------------------------------------------------------------
 
 void getConfig() {
-  String doc = createBoardDataJson();
+  String data = createBoardDataJson();
 
-  //sendMessage(doc, 200);
-  ledBlink(1, 100);
-}
-
-//-----------------------------------------------------------------------------------------------------
-
-void getHelp() {
-  StaticJsonDocument<1024> doc;
-  JsonObject help = doc.createNestedObject("help");
-  JsonObject status = help.createNestedObject("status");
-
-  status["method"] = "GET";
-  status["endpoint"] = "/api/v1/status";
-
-  JsonObject sensor = help.createNestedObject("sensor");
-
-  JsonObject temp = sensor.createNestedObject("temp");
-
-  temp["method"] = "GET";
-  temp["endpoint"] = "/api/v1/temperature/{id}";
-
-  JsonObject light = sensor.createNestedObject("light");
-
-  light["method"] = "GET";
-  light["endpoint"] = "/api/v1/light";
-
-
-  JsonObject switcher = help.createNestedObject("switcher");
-
-  JsonObject relay = switcher.createNestedObject("relay");
-
-  relay["method"] = "PUT";
-  relay["endpoint"] = "/api/v1/switchers/relay/{}";
-
-  JsonObject powerModule = switcher.createNestedObject("power-module");
-
-  powerModule["method"] = "PUT";
-  powerModule["endpoint"] = "/api/v1/powerModule";
-
-  sendMessage(doc, 200);
+  sendMessage("board-config", data, 200);
   ledBlink(1, 100);
 }
 
 //-----------------------------------------------------------------------------------------------------
 
 void getStatus() {
-  StaticJsonDocument<128> doc;
+  StaticJsonDocument<192> doc;
   doc["relay1"] = String(digitalRead(PIN_Relay1));
   doc["relay2"] = String(digitalRead(PIN_Relay2));
   doc["relay3"] = String(digitalRead(PIN_Relay3));
@@ -170,7 +131,7 @@ void yankPowerModule() {
 //-----------------------------------------------------------------------------------------------------
 
 void sendMessage(String key, String value) {
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<768> doc;
   String s;
   doc["name"] = data.name;
   doc[key] = value;
@@ -179,7 +140,7 @@ void sendMessage(String key, String value) {
 }
 
 void sendMessage(String key, String value, int statusCode) {
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<768> doc;
   String s;
   doc["name"] = data.name;
   doc[key] = value;
@@ -187,7 +148,7 @@ void sendMessage(String key, String value, int statusCode) {
   server.send(statusCode, "application/json", s);
 }
 
-void sendMessage(StaticJsonDocument<128> doc, int statusCode) {
+void sendMessage(StaticJsonDocument<768> doc, int statusCode) {
   String s;
   doc["name"] = data.name;
   serializeJson(doc, s);

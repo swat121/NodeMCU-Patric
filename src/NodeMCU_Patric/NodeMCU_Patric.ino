@@ -14,7 +14,7 @@
 #include "GyverButton.h"
 
 // Button variables
-#define BTN_PIN 5 // D0
+#define BTN_PIN 5  // D0
 GButton switchModeButton(BTN_PIN);
 
 //------------------------------------------------------------------------
@@ -124,16 +124,17 @@ void setupWifiMode(boolean& status) {
 }
 
 void handleSTAConnection() {
-  String boardData = createBoardDataJson();
-  String clientData = createClientDataJson();
-
   WifiMode = WIFI_MODE_STA;
   wifiManager.wifiModeSTA(data.ssid, data.staPass);
-  new (&connectionService) ConnectionService(clientData, boardData);
 
   if (WiFi.status() == WL_CONNECTED) {
     data.ip = WiFi.localIP().toString();
     data.mac = WiFi.macAddress();
+
+    String boardData = createBoardDataJson();
+    String clientData = createClientDataJson();
+    new (&connectionService) ConnectionService(clientData, boardData);
+
     connectionService.connectToServer(data.ip, 700);
     ledBlink(3, 100);
   }
@@ -192,11 +193,12 @@ void ledDisconnect() {
 
 String createBoardDataJson() {
   // Before change doc, you mus change doc size (check optimize doc size here https://arduinojson.org/v6/assistant/#/step1)
-  StaticJsonDocument<512> doc;
+  StaticJsonDocument<768> doc;
   String payload;
   doc["name"] = data.name;
 
   JsonObject setting = doc.createNestedObject("setting");
+
 
   // sensors
   JsonArray sensors = setting.createNestedArray("sensors");
@@ -207,14 +209,35 @@ String createBoardDataJson() {
   tempData1["moduleId"] = "1";
   tempData1["pin"] = ONE_WIRE_BUS;
 
+
   // switchers
   JsonArray switchers = setting.createNestedArray("switchers");
   JsonObject relay = switchers.createNestedObject();
+
   relay["moduleName"] = "relay";
   JsonArray relayData = relay.createNestedArray("data");
+
   JsonObject relayData1 = relayData.createNestedObject();
   relayData1["moduleId"] = "1";
   relayData1["pin"] = PIN_Relay1;
+
+  JsonObject relayData2 = relayData.createNestedObject();
+  relayData2["moduleId"] = "2";
+  relayData2["pin"] = PIN_Relay2;
+
+  JsonObject relayData3 = relayData.createNestedObject();
+  relayData3["moduleId"] = "3";
+  relayData3["pin"] = PIN_Relay3;
+
+  JsonObject power_module = switchers.createNestedObject();
+  power_module["moduleName"] = "power-module";
+  JsonArray powerData = power_module.createNestedArray("data");
+
+  JsonObject powerData1 = powerData.createNestedObject();
+  powerData1["moduleId"] = "1";
+  powerData1["pin"] = PIN_Power_Module;
+
+
 
   serializeJson(doc, payload);
   return payload;
@@ -222,7 +245,7 @@ String createBoardDataJson() {
 
 String createClientDataJson() {
   // Before change doc, you mus change doc size (check optimize doc size here https://arduinojson.org/v6/assistant/#/step1)
-  StaticJsonDocument<128> doc;
+  StaticJsonDocument<256> doc;
 
   doc["name"] = data.name;
   doc["ip"] = data.ip;
@@ -231,5 +254,8 @@ String createClientDataJson() {
 
   String payload;
   serializeJson(doc, payload);
+
+  Serial.print("Payload client: ");
+  Serial.println(payload);
   return payload;
 }
