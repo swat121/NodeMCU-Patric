@@ -16,8 +16,11 @@ String ConnectionService::createUrl(const String& baseIp, int deviceNumber, cons
   return "http://" + baseIp + String(deviceNumber) + ":" + String(PORT) + path;
 }
 
-void ConnectionService::connectToServer(const String parts[4], int timeout) {
-  String baseIp = parts[0] + "." + parts[1] + "." + parts[2] + ".";
+void ConnectionService::connectToServer(const String& ip_address, int timeout) {
+  String ip_parts[4];
+  splitString(ip_address, ip_parts);
+
+  String baseIp = ip_parts[0] + "." + ip_parts[1] + "." + ip_parts[2] + ".";
   bool isConnected = false;
 
   for (int i = 1; i < 255; i++) {
@@ -44,6 +47,16 @@ void ConnectionService::connectToServer(const String parts[4], int timeout) {
     Serial.println("Reset..");
     ESP.restart();
   }
+}
+
+void ConnectionService::splitString(String ip_address, String parts[4]) {
+  int part_index = 0;
+  while (ip_address.indexOf('.') >= 0) {
+    int dot_pos = ip_address.indexOf('.');
+    parts[part_index++] = ip_address.substring(0, dot_pos);
+    ip_address = ip_address.substring(dot_pos + 1);
+  }
+  parts[part_index] = ip_address;
 }
 
 String ConnectionService::sendBoardData(const String& host) {

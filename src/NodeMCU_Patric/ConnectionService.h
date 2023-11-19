@@ -10,7 +10,7 @@ class ConnectionService {
 public:
   ConnectionService();
   ConnectionService(const String& clientDataJson, const String& boardDataJson);
-  void connectToServer(const String parts[4], int timeout);
+  void connectToServer(const String& ip_address, int timeout);
   String sendClientData(const String& host);
   String sendBoardData(const String& host);
 
@@ -26,7 +26,7 @@ private:
   String ping(const char* link, int timeout);
   String POSTRequest(const String& link, const String& contentType, const String& payload);
   String createUrl(const String& baseIp, int deviceNumber, const String& path);
+  void splitString(String ip_address, String parts[4]);
 };
-
 
 #endif

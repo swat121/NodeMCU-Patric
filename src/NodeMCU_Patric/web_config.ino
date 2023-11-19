@@ -63,26 +63,22 @@ body {
 
 void handleFormSubmit() {
   if (server.hasArg("ssid") && server.hasArg("pass")) {
-    String arg1 = server.arg("ssid");
-    String arg2 = server.arg("pass");
-    // Do something with the message, e.g. print it to Serial
-    Serial.println(arg1);
-    Serial.println(arg2);
+    String ssid = server.arg("ssid");
+    String password = server.arg("pass");
+    Serial.println(ssid);
+    Serial.println(password);
 
     server.send(200, "text/plain", "OK");
 
-
     memoryService.startEEPROMSession(1024);
-    memoryService.writeStatus('1');
-    memoryService.writeSsidAndPass(arg1, arg2);
+    memoryService.writeStatus(1);
+    memoryService.writeSsidAndPass(ssid, password);
     memoryService.endEEPROMSession();
 
-  
-    delay(3000);
     Serial.println("Reset..");
     ESP.restart();
   } else {
-    server.send(400, "text/plain", "Bad Request");
+    server.send(400, "text/plain", "Bad Request: Missing ssid or pass");
   }
 }
 //-----------------------------------------------------------------------------------------------------
