@@ -21,7 +21,8 @@ void setCommands() {
 void getConfig() {
   String data = createBoardDataJson();
 
-  sendMessage("board-config", data, 200);
+  // sendMessage("board-config", data, 200);
+  server.send(200, "application/json", data);
   ledBlink(1, 100);
 }
 
