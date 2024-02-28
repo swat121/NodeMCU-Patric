@@ -5,6 +5,7 @@
 #include "MemoryService.h"
 #include "ConnectionService.h"
 #include "ClientData.h"
+#include <ESP8266mDNS.h>
 
 #include <uri/UriBraces.h>
 
@@ -125,6 +126,7 @@ void setupWifiMode(boolean& status) {
 
 void handleSTAConnection() {
   WifiMode = WIFI_MODE_STA;
+  String mdnsName = "esp-plug-" + data.name;
   wifiManager.wifiModeSTA(data.ssid, data.staPass);
 
   if (WiFi.status() == WL_CONNECTED) {
@@ -133,9 +135,8 @@ void handleSTAConnection() {
 
     String boardData = createBoardDataJson();
     String clientData = createClientDataJson();
-    new (&connectionService) ConnectionService(clientData, boardData);
+    ConnectionService().connectToServer(mdnsName);
 
-    connectionService.connectToServer(data.ip, 700);
     ledBlink(3, 100);
   }
 }
@@ -147,6 +148,7 @@ void handleAPConnection() {
 
 //-----------------------------------LOOP--------------------------------------------------------------
 void loop() {
+  MDNS.update();
   switchModeButton.tick();
   if (switchModeButton.isHolded()) {
     Serial.println("Button is holding");

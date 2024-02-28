@@ -4,7 +4,7 @@
 #include <Arduino.h>
 
 struct ClientData {
-    String name = "patric";
+    String name = "thor";
     String ip;
     String mac;
     String ssid;
