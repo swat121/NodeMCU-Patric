@@ -126,6 +126,7 @@ void setupWifiMode(boolean& status) {
 
 void handleSTAConnection() {
   WifiMode = WIFI_MODE_STA;
+  String mdnsName = "esp-plug-" + data.name;
   wifiManager.wifiModeSTA(data.ssid, data.staPass);
 
   if (WiFi.status() == WL_CONNECTED) {
@@ -134,7 +135,7 @@ void handleSTAConnection() {
 
     String boardData = createBoardDataJson();
     String clientData = createClientDataJson();
-    ConnectionService().connectToServer();
+    ConnectionService().connectToServer(mdnsName);
 
     ledBlink(3, 100);
   }

@@ -10,7 +10,7 @@
 class ConnectionService {
 public:
   ConnectionService();
-  void connectToServer();
+  void connectToServer(const String& name);
 
 private:
   void setUpSetting();

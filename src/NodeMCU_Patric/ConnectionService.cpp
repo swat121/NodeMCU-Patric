@@ -3,8 +3,8 @@
 ConnectionService::ConnectionService() {
 }
 
-void ConnectionService::connectToServer() {
- if (!MDNS.begin("esp-plug-patric")) {
+void ConnectionService::connectToServer(const String& name) {
+ if (!MDNS.begin(name)) {
     Serial.println("Error setting up MDNS responder!");
     while (1) {
       delay(1000);
