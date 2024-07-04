@@ -4,14 +4,26 @@
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
+
 const char* mqttService = "mqtt";
 const uint16_t mqttPort = 1883;
-const char* statusEventTopic = "esp/status/event";
 
-ConnectionService::ConnectionService() {
+String getTopicString(TopicType type, const String& name) {
+  switch (type) {
+    case DataEvent:
+      return "home/esp/" + name + "/event";
+    case Command:
+      return "home/esp/" + name + "/command";
+    default:
+      return "";
+  }
 }
 
-void ConnectionService::runMDNS(const String& name) {
+ConnectionService::ConnectionService(const String& deviceName) : name(deviceName) {
+  mqttClient.setCallback([this](char* topic, byte* payload, unsigned int length) { this->mqttCallback(topic, payload, length); });
+}
+
+void ConnectionService::runMDNS() {
   if (!MDNS.begin(name)) {
     Serial.println("Error setting up MDNS responder!");
     while (1) {
@@ -33,14 +45,14 @@ void ConnectionService::setUpSetting() {
 void ConnectionService::mqttCallback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
-  Serial.print("]: ");
-  for (int i = 0; i < length; i++) {
+  Serial.print("] ");
+  for (unsigned int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
   }
   Serial.println();
 }
 
-void ConnectionService::reconnectMqtt() {
+void ConnectionService::connectMqtt() {
   Serial.println("Searching for MQTT service using mDNS");
   int n = MDNS.queryService(mqttService, "tcp");
   if (n == 0) {
@@ -53,14 +65,16 @@ void ConnectionService::reconnectMqtt() {
   Serial.println(serverIp.toString());
 
   mqttClient.setServer(serverIp, mqttPort);
-  mqttClient.setCallback(mqttCallback);
 
   while (!mqttClient.connected()) {
-    String clientId = "ESP8266Client-";
-    clientId += String(random(0xffff), HEX);
+    String clientId = name + String(random(0xffff), HEX);
     if (mqttClient.connect(clientId.c_str())) {
       Serial.println("MQTT connected");
-      mqttClient.subscribe(statusEventTopic);
+
+      String topicCommand = "home/esp/" + name + "/command";
+
+      mqttClient.subscribe(topicCommand.c_str());
+      Serial.println("Subscribed to topic: " + topicCommand);
     } else {
       Serial.print("MQTT connect failed, rc=");
       Serial.print(mqttClient.state());
@@ -70,14 +84,15 @@ void ConnectionService::reconnectMqtt() {
   }
 }
 
-void ConnectionService::publishMessage(const String& topic, const String& message) {
-  mqttClient.publish(topic.c_str(), message.c_str());
-}
-
 void ConnectionService::startConnectMqtt() {
   if (!mqttClient.connected()) {
-    reconnectMqtt();
+    connectMqtt();
   }
+}
+
+void ConnectionService::publishMessage(TopicType topicType, const String& message) {
+  String topic = getTopicString(topicType, name);
+  mqttClient.publish(topic.c_str(), message.c_str());
 }
 
 void ConnectionService::mqttLoop() {

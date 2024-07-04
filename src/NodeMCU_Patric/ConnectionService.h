@@ -8,18 +8,24 @@
 #include <ESP8266mDNS.h>
 #include <PubSubClient.h>
 
+enum TopicType {
+  DataEvent,
+  Command
+};
+
 class ConnectionService {
 public:
-  ConnectionService();
-  void runMDNS(const String& name);
-  void publishMessage(const String& topic, const String& message);
+  ConnectionService(const String& deviceName);
+  void runMDNS();
+  void publishMessage(TopicType topicType, const String& message);
   void startConnectMqtt();
   void mqttLoop();
 
 private:
   void setUpSetting();
   static void mqttCallback(char* topic, byte* payload, unsigned int length);
-  void reconnectMqtt();
+  void connectMqtt();
+  String name;
 };
 
 #endif

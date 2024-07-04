@@ -60,7 +60,7 @@ ESP8266WebServer server(80);
 
 WiFiManager wifiManager(server);
 MemoryService memoryService;
-ConnectionService connectionService;
+ConnectionService connectionService(data.name);
 
 //------------------------------------------------------------------------
 #define ONE_WIRE_BUS 0  //D3
@@ -129,7 +129,6 @@ void setupWifiMode(boolean& status) {
 
 void handleSTAConnection() {
   WifiMode = WIFI_MODE_STA;
-  String mdnsName = "esp-plug-" + data.name;
   wifiManager.wifiModeSTA(data.ssid, data.staPass);
 
   if (WiFi.status() == WL_CONNECTED) {
@@ -138,7 +137,7 @@ void handleSTAConnection() {
 
     String boardData = createBoardDataJson();
     String clientData = createClientDataJson();
-    ConnectionService().runMDNS(mdnsName);
+    connectionService.runMDNS();
 
     ledBlink(3, 100);
   }
