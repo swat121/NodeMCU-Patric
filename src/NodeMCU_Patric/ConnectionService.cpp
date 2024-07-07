@@ -1,3 +1,4 @@
+#include "HardwareSerial.h"
 #include "ConnectionService.h"
 
 //------------------------------------------------------------------------
@@ -10,17 +11,22 @@ const uint16_t mqttPort = 1883;
 
 String getTopicString(TopicType type, const String& name) {
   switch (type) {
-    case DataEvent:
+    case Event:
       return "home/esp/" + name + "/event";
     case Command:
       return "home/esp/" + name + "/command";
+    case DataEvent:
+      return "home/esp/data/event";
     default:
       return "";
   }
 }
 
-ConnectionService::ConnectionService(const String& deviceName) : name(deviceName) {
-  mqttClient.setCallback([this](char* topic, byte* payload, unsigned int length) { this->mqttCallback(topic, payload, length); });
+ConnectionService::ConnectionService(const String& deviceName)
+  : name(deviceName) {
+  mqttClient.setCallback([this](char* topic, byte* payload, unsigned int length) {
+    this->mqttCallback(topic, payload, length);
+  });
 }
 
 void ConnectionService::runMDNS() {
@@ -65,36 +71,50 @@ void ConnectionService::connectMqtt() {
   Serial.println(serverIp.toString());
 
   mqttClient.setServer(serverIp, mqttPort);
+}
 
-  while (!mqttClient.connected()) {
+void ConnectionService::attemptMqttConnect() {
+  if (!mqttClient.connected()) {
     String clientId = name + String(random(0xffff), HEX);
     if (mqttClient.connect(clientId.c_str())) {
       Serial.println("MQTT connected");
 
-      String topicCommand = "home/esp/" + name + "/command";
-
+      String topicCommand = getTopicString(Command, name);
       mqttClient.subscribe(topicCommand.c_str());
       Serial.println("Subscribed to topic: " + topicCommand);
+
+      mqttConnecting = false;
+      readyToSendDataMessage = true;
     } else {
       Serial.print("MQTT connect failed, rc=");
       Serial.print(mqttClient.state());
-      Serial.println(" try again in 5 seconds");
-      delay(5000);
+      Serial.println(" trying again in 5 seconds");
+      mqttConnecting = true;
     }
   }
 }
 
 void ConnectionService::startConnectMqtt() {
-  if (!mqttClient.connected()) {
+  if (!mqttClient.connected() && !mqttConnecting) {
     connectMqtt();
+    mqttConnecting = true;
   }
 }
 
 void ConnectionService::publishMessage(TopicType topicType, const String& message) {
   String topic = getTopicString(topicType, name);
-  mqttClient.publish(topic.c_str(), message.c_str());
+  Serial.println("Send message: " + message + " to topic: " + topic);
+  if (mqttClient.publish(topic.c_str(), message.c_str())) {
+    Serial.println("Message published successfully");
+  } else {
+    Serial.println("Message publishing failed");
+  }
 }
 
 void ConnectionService::mqttLoop() {
+  if (mqttConnecting && (millis() - lastReconnectAttempt > 5000)) {
+    lastReconnectAttempt = millis();
+    attemptMqttConnect();
+  }
   mqttClient.loop();
 }

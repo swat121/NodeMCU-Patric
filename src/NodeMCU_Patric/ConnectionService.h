@@ -9,8 +9,9 @@
 #include <PubSubClient.h>
 
 enum TopicType {
-  DataEvent,
-  Command
+  Event,
+  Command,
+  DataEvent
 };
 
 class ConnectionService {
@@ -20,12 +21,17 @@ public:
   void publishMessage(TopicType topicType, const String& message);
   void startConnectMqtt();
   void mqttLoop();
+  bool readyToSendDataMessage;
 
 private:
   void setUpSetting();
   static void mqttCallback(char* topic, byte* payload, unsigned int length);
   void connectMqtt();
+  void attemptMqttConnect();
+
   String name;
+  bool mqttConnecting;
+  unsigned long lastReconnectAttempt;
 };
 
 #endif

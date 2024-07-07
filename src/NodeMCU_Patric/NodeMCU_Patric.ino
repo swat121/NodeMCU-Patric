@@ -155,6 +155,14 @@ void loop() {
   if (WifiMode == WIFI_MODE_STA) {
     connectionService.startConnectMqtt();
     connectionService.mqttLoop();
+
+    if (connectionService.readyToSendDataMessage) {
+      Serial.println("Ready to send data message");
+
+      connectionService.publishMessage(DataEvent, createClientDataJson());
+
+      connectionService.readyToSendDataMessage = false;
+    }
   }
 
   if (switchModeButton.isHolded()) {
