@@ -10,6 +10,7 @@ struct ClientData {
     String ssid;
     String apPass = "12345678";
     String staPass;
+    String version = "r1.4";
 };
 
 #endif

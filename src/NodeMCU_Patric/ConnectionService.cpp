@@ -6,9 +6,6 @@
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
-const char* mqttService = "mqtt";
-const uint16_t mqttPort = 1883;
-
 String getTopicString(TopicType type, const String& name) {
   switch (type) {
     case Event:
@@ -58,11 +55,12 @@ void ConnectionService::mqttCallback(char* topic, byte* payload, unsigned int le
   Serial.println();
 }
 
-void ConnectionService::connectMqtt() {
+void ConnectionService::findMqttService() {
   Serial.println("Searching for MQTT service using mDNS");
   int n = MDNS.queryService(mqttService, "tcp");
   if (n == 0) {
     Serial.println("No MQTT service found.");
+    lastMqttSearchAttempt = millis();
     return;
   }
 
@@ -71,13 +69,16 @@ void ConnectionService::connectMqtt() {
   Serial.println(serverIp.toString());
 
   mqttClient.setServer(serverIp, mqttPort);
+
+  mqttServiceFound = true;
 }
 
 void ConnectionService::attemptMqttConnect() {
   if (!mqttClient.connected()) {
     String clientId = name + String(random(0xffff), HEX);
     if (mqttClient.connect(clientId.c_str())) {
-      Serial.println("MQTT connected");
+      Serial.println();
+      Serial.println("MQTT connected: " + mqttClient.state());
 
       String topicCommand = getTopicString(Command, name);
       mqttClient.subscribe(topicCommand.c_str());
@@ -94,14 +95,17 @@ void ConnectionService::attemptMqttConnect() {
   }
 }
 
-void ConnectionService::startConnectMqtt() {
+void ConnectionService::startFoundingMqttService() {
   if (!mqttClient.connected() && !mqttConnecting) {
-    connectMqtt();
+    Serial.println(F("====================== START-FOUNDING-MQTT-SERVICE ==========================="));
+    findMqttService();
     mqttConnecting = true;
   }
 }
 
 void ConnectionService::publishMessage(TopicType topicType, const String& message) {
+  Serial.println(F("====================== PUBLISH-MESSAGE ==========================="));
+
   String topic = getTopicString(topicType, name);
   Serial.println("Send message: " + message + " to topic: " + topic);
   if (mqttClient.publish(topic.c_str(), message.c_str())) {
@@ -112,9 +116,15 @@ void ConnectionService::publishMessage(TopicType topicType, const String& messag
 }
 
 void ConnectionService::mqttLoop() {
-  if (mqttConnecting && (millis() - lastReconnectAttempt > 5000)) {
+  if (mqttServiceFound && mqttConnecting && (millis() - lastReconnectAttempt > 5000)) {
     lastReconnectAttempt = millis();
     attemptMqttConnect();
   }
+
+  if (!mqttServiceFound && (millis() - lastMqttSearchAttempt > mqttSearchInterval)) {
+    lastMqttSearchAttempt = millis();
+    findMqttService();
+  }
+
   mqttClient.loop();
 }

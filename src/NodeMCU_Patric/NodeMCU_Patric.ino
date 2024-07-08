@@ -152,12 +152,14 @@ void handleAPConnection() {
 void loop() {
   switchModeButton.tick();
 
-  if (WifiMode == WIFI_MODE_STA) {
-    connectionService.startConnectMqtt();
+  if (WifiMode == WIFI_MODE_STA && WiFi.status() == WL_CONNECTED) {
+    connectionService.startFoundingMqttService();
     connectionService.mqttLoop();
 
     if (connectionService.readyToSendDataMessage) {
+      Serial.println();
       Serial.println("Ready to send data message");
+      Serial.println();
 
       connectionService.publishMessage(DataEvent, createClientDataJson());
 
@@ -268,6 +270,7 @@ String createClientDataJson() {
   doc["ip"] = data.ip;
   doc["mac"] = data.mac;
   doc["ssid"] = data.ssid;
+  doc["version"] = data.version;
 
   String payload;
   serializeJson(doc, payload);
