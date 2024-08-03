@@ -21,9 +21,6 @@ String getTopicString(TopicType type, const String& name) {
 
 ConnectionService::ConnectionService(const String& deviceName)
   : name(deviceName) {
-  mqttClient.setCallback([this](char* topic, byte* payload, unsigned int length) {
-    this->mqttCallback(topic, payload, length);
-  });
 }
 
 void ConnectionService::runMDNS() {
@@ -69,6 +66,7 @@ void ConnectionService::findMqttService() {
   Serial.println(serverIp.toString());
 
   mqttClient.setServer(serverIp, mqttPort);
+  mqttClient.setCallback(mqttCallback);
 
   mqttServiceFound = true;
 }
@@ -81,11 +79,18 @@ void ConnectionService::attemptMqttConnect() {
       Serial.println("MQTT connected: " + mqttClient.state());
 
       String topicCommand = getTopicString(Command, name);
-      mqttClient.subscribe(topicCommand.c_str());
-      Serial.println("Subscribed to topic: " + topicCommand);
+
+      if (mqttClient.subscribe(topicCommand.c_str(), 1)) {
+        Serial.println();
+        Serial.println("Successfully subscribed to topic: " + topicCommand);
+      } else {
+        Serial.println();
+        Serial.println("Failed to subscribed to topic: " + topicCommand);
+      }
 
       mqttConnecting = false;
       readyToSendDataMessage = true;
+
     } else {
       Serial.print("MQTT connect failed, rc=");
       Serial.print(mqttClient.state());
