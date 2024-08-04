@@ -43,13 +43,43 @@ void ConnectionService::setUpSetting() {
 }
 
 void ConnectionService::mqttCallback(char* topic, byte* payload, unsigned int length) {
+
+  StaticJsonDocument<200> doc;
+
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
+  String message;
+
   for (unsigned int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
+    message += (char)payload[i];
   }
-  Serial.println();
+  Serial.println(message);
+
+  DeserializationError error = deserializeJson(doc, message);
+  if (error) {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.f_str());
+    return;
+  }
+
+  const char* moduleName = doc["moduleName"];
+  const char* moduleId = doc["moduleId"];
+  const char* mode = doc["mode"];
+  const char* userId = doc["userId"];
+  const char* type = doc["type"];
+
+  if (strcmp(type, "SWITCHER") == 0) {
+    switchHandlerV2(String(moduleName), String(moduleId), String(mode), String(userId));
+  }
+
+  if (strcmp(type, "SENSOR") == 0) {
+    sensorHandlerV2(String(moduleName), String(moduleId), String(userId));
+  }
+
+  if (strcmp(type, "TRACKER") == 0) {
+    // Your code for TRACKERS
+  }
 }
 
 void ConnectionService::findMqttService() {

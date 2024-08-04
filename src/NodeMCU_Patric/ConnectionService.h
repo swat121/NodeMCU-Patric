@@ -1,3 +1,4 @@
+#include "WString.h"
 #ifndef CONNECTION_SERVICE_H
 #define CONNECTION_SERVICE_H
 
@@ -13,6 +14,9 @@ enum TopicType {
   Command,
   DataEvent
 };
+
+extern void switchHandlerV2(String moduleName, String moduleId, String mode, String userId);
+extern void sensorHandlerV2(String moduleName, String moduleId, String userId);
 
 class ConnectionService {
 public:
