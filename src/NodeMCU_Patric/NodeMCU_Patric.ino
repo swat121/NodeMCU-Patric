@@ -5,6 +5,8 @@
 #include "MemoryService.h"
 #include "ConnectionService.h"
 #include "ClientData.h"
+
+// ----------------------------
 #include <ESP8266mDNS.h>
 
 #include <uri/UriBraces.h>
@@ -39,6 +41,7 @@ boolean disconnectLedStatus = true;
 #define PIN_LED_Good 2    //D4
 #define PIN_LED_Error 14  //D5
 //------------------------------------------------------------------------
+
 #define PIN_Relay1 12  //D6
 boolean Relay1 = false;
 
@@ -57,7 +60,7 @@ ESP8266WebServer server(80);
 
 WiFiManager wifiManager(server);
 MemoryService memoryService;
-ConnectionService connectionService;
+ConnectionService connectionService(data.name);
 
 //------------------------------------------------------------------------
 #define ONE_WIRE_BUS 0  //D3
@@ -126,7 +129,6 @@ void setupWifiMode(boolean& status) {
 
 void handleSTAConnection() {
   WifiMode = WIFI_MODE_STA;
-  String mdnsName = "esp-plug-" + data.name;
   wifiManager.wifiModeSTA(data.ssid, data.staPass);
 
   if (WiFi.status() == WL_CONNECTED) {
@@ -135,7 +137,7 @@ void handleSTAConnection() {
 
     String boardData = createBoardDataJson();
     String clientData = createClientDataJson();
-    ConnectionService().connectToServer(mdnsName);
+    connectionService.runMDNS();
 
     ledBlink(3, 100);
   }
@@ -148,8 +150,23 @@ void handleAPConnection() {
 
 //-----------------------------------LOOP--------------------------------------------------------------
 void loop() {
-  MDNS.update();
   switchModeButton.tick();
+
+  if (WifiMode == WIFI_MODE_STA && WiFi.status() == WL_CONNECTED) {
+    connectionService.startFoundingMqttService();
+    connectionService.mqttLoop();
+
+    if (connectionService.readyToSendDataMessage) {
+      Serial.println();
+      Serial.println("Ready to send data message");
+      Serial.println();
+
+      connectionService.publishMessage(DataEvent, createClientDataJson());
+
+      connectionService.readyToSendDataMessage = false;
+    }
+  }
+
   if (switchModeButton.isHolded()) {
     Serial.println("Button is holding");
 
@@ -253,6 +270,7 @@ String createClientDataJson() {
   doc["ip"] = data.ip;
   doc["mac"] = data.mac;
   doc["ssid"] = data.ssid;
+  doc["version"] = data.version;
 
   String payload;
   serializeJson(doc, payload);
